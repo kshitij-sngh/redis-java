@@ -131,6 +131,17 @@ public class Main {
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
+                                else if("LPOP".equals(inp[0]))
+                                {
+                                    List<String> list = listsMap.computeIfAbsent(inp[1], key -> new CopyOnWriteArrayList<>());
+                                    if(list.size()==0)
+                                        output=null;
+                                    else
+                                        output=list.remove(0);
+                                    String encodedBulkString = Resp.encodeBulkString(output);
+                                    outputStream.write(encodedBulkString.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                         }
                     }
