@@ -57,7 +57,7 @@ public class Main {
                                         expirationMap.put(inp[1],System.currentTimeMillis()+Long.parseLong(inp[4]));
                                     else
                                         expirationMap.remove(inp[1]);
-                                    
+
                                     output="+OK\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
@@ -81,7 +81,7 @@ public class Main {
                     {
                         System.out.println("IOException: " + e.getMessage());
                     }
-                }).start;
+                }).start();
             }
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
