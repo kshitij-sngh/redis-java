@@ -66,4 +66,9 @@ public class Resp {
         }
         return sb.toString();
     }
+
+    static String encodeSimpleString(String s)
+    {
+        return "+"+s+"\r\n";
+    }
 }

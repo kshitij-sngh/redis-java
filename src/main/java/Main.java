@@ -208,6 +208,21 @@ public class Main {
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
                                 }
+                                else if("TYPE".equals(inp[0]))
+                                {
+                                    if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
+                                    {
+                                        expirationMap.remove(inp[1]);
+                                        mp.remove(inp[1]);
+                                    }
+                                    output = mp.getOrDefault(inp[1], null);
+                                    if(output != null)
+                                        output = "string";
+                                    else output = "none";
+                                    String encodeString = Resp.encodeSimpleString(output);
+                                    outputStream.write(encodeString.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                         }
                     }
