@@ -58,6 +58,8 @@ public class Resp {
         sb.append("\r\n");
         for(String s: list)
         {
+            sb.append("$");
+            sb.append(s.length());
             sb.append(s);
             sb.append("\r\n");
         }
