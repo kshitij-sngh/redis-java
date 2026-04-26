@@ -111,6 +111,16 @@ public class Main {
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
                                 }
+                                else if("LPUSH".equals(inp[0]))
+                                {
+                                    List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
+                                    for(int i=2; i<inp.length; i++)
+                                        list.add(0,inp[i]);
+                                    int size = list.size();
+                                    String encodedInteger = Resp.encodeInteger(size);
+                                    outputStream.write(encodedInteger.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                         }
                     }
