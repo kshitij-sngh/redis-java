@@ -50,8 +50,8 @@ public class Resp {
     }
     static String encodeArray(List<String> list)
     {
-        if(list==null || list.isEmpty())
-            return "*0\r\n";
+        if(list==null)
+            return "*-1\r\n";
         StringBuilder sb = new StringBuilder();
         sb.append('*');
         sb.append(list.size());

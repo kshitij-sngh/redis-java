@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -81,10 +82,13 @@ public class Main {
                                 else if("RPUSH".equals(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
-                                    for(int i=2; i<inp.length; i++)
-                                        list.add(inp[i]);
-                                    int size = list.size();
-                                    String encodedInteger = Resp.encodeInteger(size);
+                                    synchronized (list)
+                                    {
+                                        for(int i=2; i<inp.length; i++)
+                                            list.add(inp[i]);
+                                        list.notify();
+                                    }
+                                    String encodedInteger = Resp.encodeInteger(list.size());
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
@@ -114,12 +118,14 @@ public class Main {
                                 else if("LPUSH".equals(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
-                                    List<String> toAdd = new ArrayList<>();
-                                    for(int i=inp.length-1; i>1; i--)
-                                        toAdd.add(inp[i]);
-                                    list.addAll(0,toAdd);
-                                    int size = list.size();
-                                    String encodedInteger = Resp.encodeInteger(size);
+                                    synchronized (list) {
+                                        List<String> toAdd = new ArrayList<>();
+                                        for (int i = inp.length - 1; i > 1; i--)
+                                            toAdd.add(inp[i]);
+                                        list.addAll(0, toAdd);
+                                        list.notify();
+                                    }
+                                    String encodedInteger = Resp.encodeInteger(list.size());
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
@@ -165,6 +171,42 @@ public class Main {
                                         outputStream.write(encodedArray.getBytes());
                                         outputStream.flush();
                                     }
+                                }
+                                else if("BLPOP".equals(inp[0]))
+                                {
+                                    String key = inp[1];
+                                    int timeout=Integer.parseInt(inp[2]);
+                                    long endTime = System.currentTimeMillis() + timeout*1000;
+                                    List<String> list = listsMap.computeIfAbsent(inp[0], k->new CopyOnWriteArrayList<>());
+                                    String removed = null;
+                                    List<String> removedArray = null;
+                                    synchronized (list)
+                                    {
+                                        while(list.isEmpty())
+                                        {
+                                            long remainingTime = endTime - System.currentTimeMillis();
+                                            if(timeout>0 && remainingTime<0) break;
+                                            try {
+                                                if(timeout==0)
+                                                    list.wait();
+                                                else
+                                                    list.wait(remainingTime);
+                                            } catch (InterruptedException e) {
+                                                Thread.currentThread().interrupt();
+                                                break;
+                                            }
+
+                                        }
+                                        if(!list.isEmpty()) removed=list.remove(0);
+                                    }
+                                    if(removed!=null)
+                                    {
+                                        removedArray = Arrays.asList(inp[0],removed);
+                                    }
+
+                                    String encodedArray = Resp.encodeArray(removedArray);
+                                    outputStream.write(encodedArray.getBytes());
+                                    outputStream.flush();
                                 }
                             }
                         }
