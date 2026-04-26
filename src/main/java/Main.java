@@ -150,7 +150,10 @@ public class Main {
                                         toRemove = Math.min(toRemove, list.size());
                                         List<String> removed = new ArrayList<>();
                                         while(toRemove>0 && !list.isEmpty())
+                                        {
                                             removed.add(list.remove(0));
+                                            toRemove--;
+                                        }
                                         String encodedArray = Resp.encodeArray(removed);
                                         outputStream.write(encodedArray.getBytes());
                                         outputStream.flush();
