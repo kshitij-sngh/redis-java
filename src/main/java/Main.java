@@ -81,7 +81,8 @@ public class Main {
                                 {
                                     if(!listsMap.containsKey(inp[1]))
                                         listsMap.put(inp[1], new CopyOnWriteArrayList<>());
-                                    listsMap.get(inp[1]).add(inp[2]);
+                                    for(int i=2; i<inp.length; i++)
+                                        listsMap.get(inp[1]).add(inp[i]);
                                     int size = listsMap.get(inp[1]).size();
                                     String encodedInteger = Resp.encodeInteger(size);
                                     outputStream.write(encodedInteger.getBytes());
