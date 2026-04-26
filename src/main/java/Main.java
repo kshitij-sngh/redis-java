@@ -27,7 +27,7 @@ public class Main {
                 // Wait for connection from client.
                 clientSocket = serverSocket.accept();
 
-                Socket finalClientSocket1 = clientSocket;
+                final Socket finalClientSocket1 = clientSocket;
                 new Thread(()->{
                     try(Socket finalClientSocket = finalClientSocket1;
                         InputStream inputStream = finalClientSocket.getInputStream();
@@ -55,15 +55,15 @@ public class Main {
                                 }
                                 else if("SET".equals(inp[0]))
                                 {
-                                    mp.put(inp[0], inp[1]);
+                                    mp.put(inp[1], inp[2]);
                                     output="+OK\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
                                 else if("GET".equals(inp[0]))
                                 {
-                                    if(mp.contains(inp[0]))
-                                        output=mp.get(inp[0]);
+                                    if(mp.contains(inp[1]))
+                                        output=mp.get(inp[1]);
                                     else
                                         output=null;
                                     String encodeBulkString = Resp.encodeBulk(output);
