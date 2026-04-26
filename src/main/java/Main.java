@@ -215,12 +215,11 @@ public class Main {
                                         expirationMap.remove(inp[1]);
                                         mp.remove(inp[1]);
                                     }
-                                    output = mp.getOrDefault(inp[1], null);
-                                    if(output != null)
-                                        output = "string";
-                                    else output = "none";
-                                    String encodeString = Resp.encodeSimpleString(output);
-                                    outputStream.write(encodeString.getBytes());
+                                    String type = "none";
+                                    if(mp.containsKey(inp[1]))
+                                        type="string";
+                                    String encodedString = Resp.encodeSimpleString(type);
+                                    outputStream.write(encodedString.getBytes());
                                     outputStream.flush();
                                 }
                             }
