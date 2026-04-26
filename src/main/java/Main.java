@@ -176,7 +176,6 @@ public class Main {
                                 {
                                     String key = inp[1];
                                     float timeout=Float.parseFloat(inp[2]);
-                                    System.out.println((long)(timeout*1000));
                                     long endTime = System.currentTimeMillis() + (long)(timeout*1000);
                                     List<String> list = listsMap.computeIfAbsent(key, k->new CopyOnWriteArrayList<>());
                                     String removed = null;
@@ -186,9 +185,9 @@ public class Main {
                                         while(list.isEmpty())
                                         {
                                             long remainingTime = endTime - System.currentTimeMillis();
-                                            if(timeout>0f && remainingTime<0) break;
+                                            if(timeout>0 && remainingTime<=0) break;
                                             try {
-                                                if(timeout==0f)
+                                                if(timeout==0)
                                                     list.wait();
                                                 else
                                                     list.wait(remainingTime);
