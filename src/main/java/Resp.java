@@ -29,7 +29,7 @@ public class Resp {
     static String encodeInteger(int num)
     {
         if(num==0)
-            return "+\r\n";
+            return "+0\r\n";
 
         StringBuilder sb = new StringBuilder();
         sb.append(":");
