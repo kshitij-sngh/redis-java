@@ -125,36 +125,43 @@ public class Main {
                                 }
                                 else if ("LLEN".equals(inp[0]))
                                 {
-                                    List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
-                                    int size = list.size();
+                                    List<String> list = listsMap.get(inp[1]);
+                                    int size = (list==null)?0:list.size();
                                     String encodedInteger = Resp.encodeInteger(size);
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
                                 else if("LPOP".equals(inp[0]))
                                 {
-                                    List<String> list = listsMap.computeIfAbsent(inp[1], key -> new CopyOnWriteArrayList<>());
                                     if(inp.length==2)
                                     {
-                                        if (list.size() == 0)
-                                            output = null;
-                                        else
-                                            output = list.remove(0);
-                                        String encodedBulkString = Resp.encodeBulkString(output);
+                                        List<String> list = listsMap.get(inp[1]);
+                                        String removed = null;
+                                        if(list!=null) {
+                                            synchronized (list) {
+                                                if (!list.isEmpty())
+                                                    removed = list.remove(0);
+                                            }
+                                        }
+                                        String encodedBulkString = Resp.encodeBulkString(removed);
                                         outputStream.write(encodedBulkString.getBytes());
                                         outputStream.flush();
                                     }
                                     else if(inp.length==3)
                                     {
+                                        List<String> list = listsMap.get(inp[1]);
+                                        List<String> removedItems = new ArrayList<>();
                                         int toRemove=Integer.parseInt(inp[2]);
-                                        toRemove = Math.min(toRemove, list.size());
-                                        List<String> removed = new ArrayList<>();
-                                        while(toRemove>0 && !list.isEmpty())
-                                        {
-                                            removed.add(list.remove(0));
-                                            toRemove--;
+
+                                        synchronized (list){
+                                            toRemove = Math.min(toRemove, list.size());
+                                            for(int i=0; i<toRemove; i++)
+                                            {
+                                                removedItems.add(list.remove(0));
+                                            }
                                         }
-                                        String encodedArray = Resp.encodeArray(removed);
+
+                                        String encodedArray = Resp.encodeArray(removedItems);
                                         outputStream.write(encodedArray.getBytes());
                                         outputStream.flush();
                                     }
