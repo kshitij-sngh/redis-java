@@ -79,11 +79,10 @@ public class Main {
                                 }
                                 else if("RPUSH".equals(inp[0]))
                                 {
-                                    if(!listsMap.containsKey(inp[1]))
-                                        listsMap.put(inp[1], new CopyOnWriteArrayList<>());
+                                    List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
                                     for(int i=2; i<inp.length; i++)
-                                        listsMap.get(inp[1]).add(inp[i]);
-                                    int size = listsMap.get(inp[1]).size();
+                                        list.add(inp[i]);
+                                    int size = list.size();
                                     String encodedInteger = Resp.encodeInteger(size);
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
