@@ -114,8 +114,10 @@ public class Main {
                                 else if("LPUSH".equals(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
-                                    for(int i=2; i<inp.length; i++)
-                                        list.add(0,inp[i]);
+                                    List<String> toAdd = new ArrayList<>();
+                                    for(int i=inp.length-1; i>1; i--)
+                                        toAdd.add(inp[i]);
+                                    list.addAll(0,toAdd);
                                     int size = list.size();
                                     String encodedInteger = Resp.encodeInteger(size);
                                     outputStream.write(encodedInteger.getBytes());
