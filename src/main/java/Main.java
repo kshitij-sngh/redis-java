@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
   public static void main(String[] args){
@@ -20,13 +21,15 @@ public class Main {
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
-          // Wait for connection from client.
+          ConcurrentHashMap<String,String>mp = new ConcurrentHashMap<>();
+
             while(true) {
+                // Wait for connection from client.
                 clientSocket = serverSocket.accept();
 
-                Socket finalClientSocket = clientSocket;
+                Socket finalClientSocket1 = clientSocket;
                 new Thread(()->{
-                    try(
+                    try(Socket finalClientSocket = finalClientSocket1;
                         InputStream inputStream = finalClientSocket.getInputStream();
                         OutputStream outputStream = finalClientSocket.getOutputStream();
                         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -46,6 +49,23 @@ public class Main {
                                     outputStream.flush();
                                 } else if ("ECHO".equals(inp[0])) {
                                     output = inp[1];
+                                    String encodeBulkString = Resp.encodeBulk(output);
+                                    outputStream.write(encodeBulkString.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("SET".equals(inp[0]))
+                                {
+                                    mp.put(inp[0], inp[1]);
+                                    output="+OK\r\n";
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("GET".equals(inp[0]))
+                                {
+                                    if(mp.contains(inp[0]))
+                                        output=mp.get(inp[0]);
+                                    else
+                                        output=null;
                                     String encodeBulkString = Resp.encodeBulk(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();

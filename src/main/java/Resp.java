@@ -19,9 +19,12 @@ public class Resp {
     {
         StringBuilder sb = new StringBuilder();
         sb.append("$");
-        sb.append(output.length());
-        sb.append("\r\n");
-        sb.append(output);
+        if(output!=null) {
+            sb.append(output.length());
+            sb.append("\r\n");
+            sb.append(output);
+        }
+        else sb.append(-1);
         sb.append("\r\n");
         return sb.toString();
     }
