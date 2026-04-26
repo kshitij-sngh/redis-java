@@ -1,10 +1,6 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
@@ -62,10 +58,7 @@ public class Main {
                                 }
                                 else if("GET".equals(inp[0]))
                                 {
-                                    if(mp.contains(inp[1]))
-                                        output=mp.get(inp[1]);
-                                    else
-                                        output=null;
+                                    output = mp.getOrDefault(inp[1], null);
                                     String encodeBulkString = Resp.encodeBulk(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
