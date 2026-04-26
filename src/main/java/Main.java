@@ -29,26 +29,24 @@ public class Main {
                     try(
                         InputStream inputStream = finalClientSocket.getInputStream();
                         OutputStream outputStream = finalClientSocket.getOutputStream();
-                    ) {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                        String line = reader.readLine();
-                        String output="";
-                        if (line != null)
+                    ) {
+                        String line;
+                        while((line=reader.readLine())!=null)
                         {
-                            if(line.startsWith("*"))
-                            {
+                            String output = "";
+
+                            if (line.startsWith("*")) {
                                 int length = Integer.parseInt(line.substring(1));
                                 String[] inp = Resp.decodeBulk(reader, length);
 
-                                if("PING".equals(inp[0])) {
+                                if ("PING".equals(inp[0])) {
                                     output = "+PONG\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
-                                }
-                                else if("ECHO".equals(inp[0]))
-                                {
-                                    output=inp[1];
-                                    String encodeBulkString=Resp.encodeBulk(output);
+                                } else if ("ECHO".equals(inp[0])) {
+                                    output = inp[1];
+                                    String encodeBulkString = Resp.encodeBulk(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
                                 }
