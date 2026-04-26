@@ -60,6 +60,7 @@ public class Resp {
         {
             sb.append("$");
             sb.append(s.length());
+            sb.append("\r\n");
             sb.append(s);
             sb.append("\r\n");
         }
