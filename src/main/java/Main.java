@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,7 +42,7 @@ public class Main {
 
                             if (line.startsWith("*")) {
                                 int length = Integer.parseInt(line.substring(1));
-                                String[] inp = Resp.decodeBulk(reader, length);
+                                String[] inp = Resp.decodeBulkString(reader, length);
 
                                 if ("PING".equals(inp[0])) {
                                     output = "+PONG\r\n";
@@ -49,7 +50,7 @@ public class Main {
                                     outputStream.flush();
                                 } else if ("ECHO".equals(inp[0])) {
                                     output = inp[1];
-                                    String encodeBulkString = Resp.encodeBulk(output);
+                                    String encodeBulkString = Resp.encodeBulkString(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
                                 }
@@ -73,7 +74,7 @@ public class Main {
                                         mp.remove(inp[1]);
                                     }
                                     output = mp.getOrDefault(inp[1], null);
-                                    String encodeBulkString = Resp.encodeBulk(output);
+                                    String encodeBulkString = Resp.encodeBulkString(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
                                 }
@@ -85,6 +86,21 @@ public class Main {
                                     int size = list.size();
                                     String encodedInteger = Resp.encodeInteger(size);
                                     outputStream.write(encodedInteger.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("LRANGE".equals(inp[0]))
+                                {
+                                    int l=Integer.parseInt(inp[2]);
+                                    int r=Integer.parseInt(inp[3]);
+                                    List<String> list = listsMap.getOrDefault(inp[1], null);
+                                    List<String> rangeList = new ArrayList<>();
+                                    if(list !=null)
+                                    {
+                                        for(int i=l; i<=Math.min(list.size()-1,r); i++)
+                                            rangeList.add(list.get(i));
+                                    }
+                                    String encodedArray = Resp.encodeArray(rangeList);
+                                    outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
                                 }
                             }

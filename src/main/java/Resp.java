@@ -1,11 +1,9 @@
-import javax.imageio.IIOException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.List;
 
 public class Resp {
-    static String[] decodeBulk(BufferedReader reader, int length) throws IOException {
+    static String[] decodeBulkString(BufferedReader reader, int length) throws IOException {
         if (length == -1) return null;
         String[] decoded = new String[length];
         for (int i = 0; i < length; i++) {
@@ -15,7 +13,7 @@ public class Resp {
         }
         return decoded;
     }
-    static String encodeBulk(String output)
+    static String encodeBulkString(String output)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("$");
@@ -48,6 +46,21 @@ public class Resp {
             num/=10;
         }
         sb.append("\r\n");
+        return sb.toString();
+    }
+    static String encodeArray(List<String> list)
+    {
+        if(list==null || list.isEmpty())
+            return "*0\r\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append('*');
+        sb.append(list.size());
+        sb.append("\r\n");
+        for(String s: list)
+        {
+            sb.append(s);
+            sb.append("\r\n");
+        }
         return sb.toString();
     }
 }
