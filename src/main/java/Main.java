@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Main {
   public static void main(String[] args){
@@ -19,6 +21,7 @@ public class Main {
           serverSocket.setReuseAddress(true);
           ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
+          ConcurrentHashMap<String, List<String>> listsMap = new ConcurrentHashMap<>();
 
             while(true) {
                 // Wait for connection from client.
@@ -72,6 +75,16 @@ public class Main {
                                     output = mp.getOrDefault(inp[1], null);
                                     String encodeBulkString = Resp.encodeBulk(output);
                                     outputStream.write(encodeBulkString.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("RPUSH".equals(inp[0]))
+                                {
+                                    if(!listsMap.containsKey(inp[1]))
+                                        listsMap.put(inp[1], new CopyOnWriteArrayList<>());
+                                    listsMap.get(inp[1]).add(inp[2]);
+                                    int size = listsMap.get(inp[1]).size();
+                                    String encodedInteger = Resp.encodeInteger(size);
+                                    outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
                             }

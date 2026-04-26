@@ -28,4 +28,26 @@ public class Resp {
         sb.append("\r\n");
         return sb.toString();
     }
+    static String encodeInteger(int num)
+    {
+        if(num==0)
+            return "+\r\n";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(":");
+        char sign='+';
+        if(num<0)
+        {
+            sign='-';
+            num*=-1;
+        }
+        sb.append(sign);
+        while(num>0)
+        {
+            sb.append(num%10);
+            num/=10;
+        }
+        sb.append("\r\n");
+        return sb.toString();
+    }
 }
