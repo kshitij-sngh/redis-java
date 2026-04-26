@@ -41,7 +41,7 @@ public class Main {
                                 String[] inp = Resp.decodeBulk(reader, length);
 
                                 if("PING".equals(inp[0])) {
-                                    output = "+PONG";
+                                    output = "+PONG\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
