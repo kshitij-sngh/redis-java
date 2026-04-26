@@ -90,12 +90,20 @@ public class Main {
                                 }
                                 else if("LRANGE".equals(inp[0]))
                                 {
-                                    int l=Integer.parseInt(inp[2]);
-                                    int r=Integer.parseInt(inp[3]);
                                     List<String> list = listsMap.getOrDefault(inp[1], null);
                                     List<String> rangeList = new ArrayList<>();
                                     if(list !=null)
                                     {
+                                        int l=Integer.parseInt(inp[2]);
+                                        int r=Integer.parseInt(inp[3]);
+
+                                        int len=list.size();
+
+                                        l = l<0? len+l: l;
+                                        l=Math.max(0,l);
+                                        r = r<0? len+r: r;
+                                        r=Math.min(len-1,r);
+
                                         for(int i=l; i<=Math.min(list.size()-1,r); i++)
                                             rangeList.add(list.get(i));
                                     }
