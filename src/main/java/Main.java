@@ -40,16 +40,21 @@ public class Main {
                                 int length = Integer.parseInt(line.substring(1));
                                 String[] inp = Resp.decodeBulk(reader, length);
 
-                                if("PING".equals(inp[0]))
-                                    output="PONG";
+                                if("PING".equals(inp[0])) {
+                                    output = "+PONG";
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                }
                                 else if("ECHO".equals(inp[0]))
+                                {
                                     output=inp[1];
+                                    String encodeBulkString=Resp.encodeBulk(output);
+                                    outputStream.write(encodeBulkString.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                         }
-                        String encodeBulkString=Resp.encodeBulk(output);
-                        outputStream.write(encodeBulkString.getBytes());
-                        outputStream.flush();
-                        }
+                    }
                     catch (IOException e)
                     {
                         System.out.println("IOException: " + e.getMessage());
