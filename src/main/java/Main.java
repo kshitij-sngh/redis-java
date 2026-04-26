@@ -17,7 +17,8 @@ public class Main {
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
-          ConcurrentHashMap<String,String>mp = new ConcurrentHashMap<>();
+          ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
+          ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
 
             while(true) {
                 // Wait for connection from client.
@@ -52,12 +53,19 @@ public class Main {
                                 else if("SET".equals(inp[0]))
                                 {
                                     mp.put(inp[1], inp[2]);
+                                    if(inp.length == 5 && "PX".equals(inp[3]))
+                                        expirationMap.put(inp[1],System.currentTimeMillis()+Long.parseLong(inp[4]));
                                     output="+OK\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
                                 else if("GET".equals(inp[0]))
                                 {
+                                    if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
+                                    {
+                                        expirationMap.remove(inp[1]);
+                                        mp.remove(inp[1]);
+                                    }
                                     output = mp.getOrDefault(inp[1], null);
                                     String encodeBulkString = Resp.encodeBulk(output);
                                     outputStream.write(encodeBulkString.getBytes());
