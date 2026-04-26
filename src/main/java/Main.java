@@ -2,6 +2,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Scanner;
 
 public class Main {
   public static void main(String[] args){
@@ -27,13 +30,27 @@ public class Main {
                         InputStream inputStream = finalClientSocket.getInputStream();
                         OutputStream outputStream = finalClientSocket.getOutputStream();
                     ) {
-                        byte[] buffer = new byte[1024];
-                        int bytesRead;
-                        while ((bytesRead = inputStream.read(buffer)) != -1) {
-                            outputStream.write("+PONG\r\n".getBytes());
-                            outputStream.flush();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                        String line = reader.readLine();
+                        String output="";
+                        if (line != null)
+                        {
+                            if(line.startsWith("*"))
+                            {
+                                int length = Integer.parseInt(line.substring(1));
+                                String[] inp = Resp.decodeBulk(reader, length);
+
+                                if("PING".equals(inp[0]))
+                                    output="PONG";
+                                else if("ECHO".equals(inp[0]))
+                                    output=inp[1];
+                            }
                         }
-                    }catch (IOException e)
+                        String encodeBulkString=Resp.encodeBulk(output);
+                        outputStream.write(encodeBulkString.getBytes());
+                        outputStream.flush();
+                        }
+                    catch (IOException e)
                     {
                         System.out.println("IOException: " + e.getMessage());
                     }
