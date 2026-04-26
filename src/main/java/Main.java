@@ -123,6 +123,14 @@ public class Main {
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
+                                else if ("LLEN".equals(inp[0]))
+                                {
+                                    List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
+                                    int size = list.size();
+                                    String encodedInteger = Resp.encodeInteger(size);
+                                    outputStream.write(encodedInteger.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                         }
                     }
