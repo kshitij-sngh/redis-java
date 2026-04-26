@@ -177,7 +177,7 @@ public class Main {
                                     String key = inp[1];
                                     int timeout=Integer.parseInt(inp[2]);
                                     long endTime = System.currentTimeMillis() + timeout*1000;
-                                    List<String> list = listsMap.computeIfAbsent(inp[0], k->new CopyOnWriteArrayList<>());
+                                    List<String> list = listsMap.computeIfAbsent(key, k->new CopyOnWriteArrayList<>());
                                     String removed = null;
                                     List<String> removedArray = null;
                                     synchronized (list)
@@ -201,7 +201,7 @@ public class Main {
                                     }
                                     if(removed!=null)
                                     {
-                                        removedArray = Arrays.asList(inp[0],removed);
+                                        removedArray = Arrays.asList(key,removed);
                                     }
 
                                     String encodedArray = Resp.encodeArray(removedArray);
