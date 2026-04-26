@@ -134,13 +134,27 @@ public class Main {
                                 else if("LPOP".equals(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key -> new CopyOnWriteArrayList<>());
-                                    if(list.size()==0)
-                                        output=null;
-                                    else
-                                        output=list.remove(0);
-                                    String encodedBulkString = Resp.encodeBulkString(output);
-                                    outputStream.write(encodedBulkString.getBytes());
-                                    outputStream.flush();
+                                    if(inp.length==2)
+                                    {
+                                        if (list.size() == 0)
+                                            output = null;
+                                        else
+                                            output = list.remove(0);
+                                        String encodedBulkString = Resp.encodeBulkString(output);
+                                        outputStream.write(encodedBulkString.getBytes());
+                                        outputStream.flush();
+                                    }
+                                    else if(inp.length==3)
+                                    {
+                                        int toRemove=Integer.parseInt(inp[2]);
+                                        toRemove = Math.min(toRemove, list.size());
+                                        List<String> removed = new ArrayList<>();
+                                        while(toRemove>0 && !list.isEmpty())
+                                            removed.add(list.remove(0));
+                                        String encodedArray = Resp.encodeArray(removed);
+                                        outputStream.write(encodedArray.getBytes());
+                                        outputStream.flush();
+                                    }
                                 }
                             }
                         }
