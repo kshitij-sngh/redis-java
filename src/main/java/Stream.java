@@ -20,7 +20,7 @@ public class Stream {
         return id;
     }
 
-    public ConcurrentNavigableMap<StreamId, Map<String, String>> getRange(String start, String end) {
+    public ConcurrentNavigableMap<StreamId, Map<String, String>> getRange(String start, boolean startInclusive, String end) {
         if (entries.isEmpty())
             return new ConcurrentSkipListMap<>();
 
@@ -28,7 +28,7 @@ public class Stream {
         StreamId endId = "+".equals(end) ? entries.lastKey() : parseInputId(end);
 
         if (entries.isEmpty()) return new ConcurrentSkipListMap<>();
-        return entries.subMap(startId,true, endId, true);
+        return entries.subMap(startId,startInclusive, endId, true);
     }
 
     private long generateSequenceNumber(long millisecondsTime)

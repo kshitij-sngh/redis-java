@@ -253,25 +253,27 @@ public class Main {
                                     if(streamMap.containsKey(streamKey))
                                     {
                                         Stream stream = streamMap.get(streamKey);
-                                        subEntries =stream.getRange(start,end);
+                                        subEntries =stream.getRange(start,true,end);
                                     }
-                                    List<String> innerArrays = new ArrayList<>();
-                                    for(Map.Entry<StreamId, Map<String,String>> e: subEntries.entrySet())
+                                    List<String> innerArrays = Helper.convertSubMapToEncodedArray(subEntries);
+                                    String encodedArray = Resp.joinAsRespArray(innerArrays);
+                                    outputStream.write(encodedArray.getBytes());
+                                    outputStream.flush();
+
+                                }
+                                else if("XREAD".equals(inp[0]))
+                                {
+                                    String streamKey = inp[1];
+                                    String start=inp[2];
+                                    String end="+";
+
+                                    ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
+                                    if(streamMap.containsKey(streamKey))
                                     {
-                                        StreamId streamId = e.getKey();
-                                        Map<String,String> kvMap = e.getValue();
-                                        List<String> kvList = new ArrayList<>();
-                                        for(Map.Entry<String,String> eKV: kvMap.entrySet())
-                                        {
-                                            kvList.add(eKV.getKey());
-                                            kvList.add(eKV.getValue());
-                                        }
-                                        String streamIdEncodedBulkString = Resp.encodeBulkString(streamId.getStreamIdAsString());
-                                        String kvEncodedArray = Resp.encodeArray(kvList);
-
-
-                                        innerArrays.add(Resp.joinAsRespArray(List.of(streamIdEncodedBulkString, kvEncodedArray)));
+                                        Stream stream = streamMap.get(streamKey);
+                                        subEntries =stream.getRange(start,false, end);
                                     }
+                                    List<String> innerArrays = Helper.convertSubMapToEncodedArray(subEntries);
                                     String encodedArray = Resp.joinAsRespArray(innerArrays);
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
