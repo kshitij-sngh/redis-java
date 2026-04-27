@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Main {
@@ -243,6 +244,40 @@ public class Main {
 
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
+                                }
+                                else if("XRANGE".equals(inp[0]))
+                                {
+                                    String streamKey = inp[1];
+                                    String start=inp[2], end=inp[3];
+                                    ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
+                                    if(streamMap.containsKey(streamKey))
+                                    {
+                                        Stream stream = streamMap.get(streamKey);
+                                        subEntries =stream.getRange(start,end);
+                                    }
+                                    List<String> innerArrays = new ArrayList<>();
+                                    for(Map.Entry<StreamId, Map<String,String>> e: subEntries.entrySet())
+                                    {
+                                        StreamId streamId = e.getKey();
+                                        Map<String,String> kvMap = e.getValue();
+                                        List<String> kvList = new ArrayList<>();
+                                        for(Map.Entry<String,String> eKV: kvMap.entrySet())
+                                        {
+                                            kvList.add(eKV.getKey());
+                                            kvList.add(eKV.getValue());
+                                        }
+                                        String streamIdEncodedBulkString = Resp.encodeBulkString(streamId.getStreamIdAsString());
+                                        String kvEncodedArray = Resp.encodeArray(kvList);
+
+
+                                        innerArrays.add(streamIdEncodedBulkString);
+                                        innerArrays.add(kvEncodedArray);
+
+                                    }
+                                    String encodedArray = Resp.encodeArray(innerArrays);
+                                    outputStream.write(encodedArray.getBytes());
+                                    outputStream.flush();
+
                                 }
                             }
                         }

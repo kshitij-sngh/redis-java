@@ -19,6 +19,14 @@ public class Stream {
         entries.put(id, values);
         return id;
     }
+
+    public ConcurrentNavigableMap<StreamId, Map<String, String>> getRange(String start, String end) {
+        StreamId startId= parseInputId(start);
+        StreamId endId = parseInputId(end);
+
+        return entries.subMap(startId,true, endId, true);
+    }
+
     private long generateSequenceNumber(long millisecondsTime)
     {
         if(entries.isEmpty()) {
@@ -59,4 +67,6 @@ public class Stream {
         seq = Long.parseLong(parts[1]);
         return new StreamId(time, seq);
     }
+
+
 }
