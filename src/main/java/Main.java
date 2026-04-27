@@ -263,8 +263,8 @@ public class Main {
                                 }
                                 else if("XREAD".equals(inp[0]))
                                 {
-                                    String streamKey = inp[1];
-                                    String start=inp[2];
+                                    String streamKey = inp[2];
+                                    String start=inp[3];
                                     String end="+";
 
                                     ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
@@ -273,8 +273,12 @@ public class Main {
                                         Stream stream = streamMap.get(streamKey);
                                         subEntries =stream.getRange(start,false, end);
                                     }
+                                    String streamKeyBulk = Resp.encodeBulkString(streamKey);
                                     List<String> innerArrays = Helper.convertSubMapToEncodedArray(subEntries);
-                                    String encodedArray = Resp.joinAsRespArray(innerArrays);
+                                    String encodedInnerArrays = Resp.joinAsRespArray(innerArrays);
+                                    List<String> outerArray = List.of(streamKeyBulk,encodedInnerArrays);
+                                    String encodedArray = Resp.joinAsRespArray(outerArray);
+
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
 

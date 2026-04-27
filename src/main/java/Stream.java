@@ -28,7 +28,7 @@ public class Stream {
         StreamId endId = "+".equals(end) ? entries.lastKey() : parseInputId(end);
 
         if (entries.isEmpty()) return new ConcurrentSkipListMap<>();
-        return entries.subMap(startId,startInclusive, endId, true);
+        return entries.subMap(startId, startInclusive, endId, true);
     }
 
     private long generateSequenceNumber(long millisecondsTime)
