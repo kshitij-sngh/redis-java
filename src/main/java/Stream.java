@@ -15,6 +15,7 @@ public class Stream {
             if(id.compareTo(lastId)<=0)
                 throw new StreamException(Constants.STREAM_ADD_LESS_THAN_LAST_ERROR);
         }
+
         entries.put(id, values);
         return id;
     }
@@ -52,9 +53,10 @@ public class Stream {
         if("*".equals(parts[1]))
         {
             seq = generateSequenceNumber(time);
+            return new StreamId(time, seq);
         }
-        else seq = Long.parseLong(parts[1]);
 
+        seq = Long.parseLong(parts[1]);
         return new StreamId(time, seq);
     }
 }
