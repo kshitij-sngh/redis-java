@@ -21,6 +21,9 @@ public class Stream {
     }
 
     public ConcurrentNavigableMap<StreamId, Map<String, String>> getRange(String start, String end) {
+        if (entries.isEmpty())
+            return new ConcurrentSkipListMap<>();
+        
         StreamId startId;
         if("-".equals(start))
             startId = entries.firstKey();
@@ -29,6 +32,7 @@ public class Stream {
 
         StreamId endId = parseInputId(end);
 
+        if (entries.isEmpty()) return new ConcurrentSkipListMap<>();
         return entries.subMap(startId,true, endId, true);
     }
 
