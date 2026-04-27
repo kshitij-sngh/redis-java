@@ -279,7 +279,8 @@ public class Main {
                                     List<String> outerArray = List.of(streamKeyBulk,encodedInnerArrays);
                                     String encodedArray = Resp.joinAsRespArray(outerArray);
 
-                                    outputStream.write(encodedArray.getBytes());
+                                    String xReadResponse = Resp.joinAsRespArray(List.of(encodedArray));
+                                    outputStream.write(xReadResponse.getBytes());
                                     outputStream.flush();
 
                                 }
