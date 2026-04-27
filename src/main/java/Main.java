@@ -235,6 +235,10 @@ public class Main {
                                         entryMap.put(k,v);
                                     }
                                     stream.addEntry(streamId, entryMap);
+
+                                    String encodedOutput = Resp.encodeBulkString(streamKey);
+                                    outputStream.write(encodedOutput.getBytes());
+                                    outputStream.flush();
                                 }
                             }
                         }
