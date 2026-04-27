@@ -9,6 +9,10 @@ public class StreamId implements Comparable<StreamId>{
         this.sequence = sequence;
     }
 
+    public String getStreamIdAsString()
+    {
+        return time+Constants.STREAM_DELIMITER+sequence;
+    }
     @Override
     public int compareTo(StreamId o) {
         if(this.time==o.time)

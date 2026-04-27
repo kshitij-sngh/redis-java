@@ -236,7 +236,7 @@ public class Main {
                                     }
                                     stream.addEntry(streamId, entryMap);
 
-                                    String encodedOutput = Resp.encodeBulkString(streamKey);
+                                    String encodedOutput = Resp.encodeBulkString(streamId.getStreamIdAsString());
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
                                 }
