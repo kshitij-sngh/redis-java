@@ -24,6 +24,14 @@ public class StreamId implements Comparable<StreamId>{
         return Long.compare(this.millisecondsTime, o.millisecondsTime);
     }
 
+    public long getMillisecondsTime() {
+        return millisecondsTime;
+    }
+
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

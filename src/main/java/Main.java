@@ -226,7 +226,6 @@ public class Main {
                                 {
                                     String streamKey = inp[1];
                                     Stream stream = streamMap.computeIfAbsent(streamKey, k->new Stream());
-                                    StreamId streamId = Resp.parseStreamId(inp[2]);
                                     Map<String, String> entryMap = new HashMap<>();
                                     for(int i=3; i<inp.length; i+=2)
                                     {
@@ -234,10 +233,14 @@ public class Main {
                                         String v=inp[i+1];
                                         entryMap.put(k,v);
                                     }
-                                    String err = stream.addEntry(streamId, entryMap);
-                                    String encodedOutput = Resp.encodeBulkString(streamId.getStreamIdAsString());
-                                    if(err!=null)
-                                        encodedOutput = Resp.encodeError(err);
+                                    String encodedOutput  = null;
+                                    try {
+                                        StreamId streamId = stream.addEntry(inp[2], entryMap);
+                                        encodedOutput = Resp.encodeBulkString(streamId.getStreamIdAsString());
+                                    } catch (StreamException e) {
+                                        encodedOutput = Resp.encodeError(e.getMessage());
+                                    }
+                                    
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
                                 }
