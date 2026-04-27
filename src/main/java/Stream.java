@@ -1,4 +1,3 @@
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -19,26 +18,40 @@ public class Stream {
         entries.put(id, values);
         return id;
     }
+    private long generateSequenceNumber(long millisecondsTime)
+    {
+        if(entries.isEmpty()) {
+            if (millisecondsTime == 0)
+                return 1;
+            return 0;
+        }
+        else
+        {
+            StreamId lastId = entries.lastKey();
+            if(lastId.getMillisecondsTime() == millisecondsTime){
+                return lastId.getSequenceNumber()+1;
+            }
+            else if(millisecondsTime==0)
+                return 1;
+            else
+                return 0;
+        }
+    }
     private StreamId parseInputId(String inputId)
     {
+        if("*".equals(inputId))
+        {
+            long time = System.currentTimeMillis();
+            long seq = generateSequenceNumber(time);
+            return new StreamId(time,seq);
+
+        }
         String[] parts = inputId.split(Constants.STREAM_DELIMITER);
         long time = Long.parseLong(parts[0]);
         long seq;
         if("*".equals(parts[1]))
         {
-            if(entries.isEmpty())
-                return new StreamId(0,1);
-            else
-            {
-                StreamId lastId = entries.lastKey();
-                if(lastId.getMillisecondsTime() == time){
-                    return new StreamId(time, lastId.getSequenceNumber()+1);
-                }
-                else if(time==0)
-                    return new StreamId(time, 1);
-                else
-                    return new StreamId(time, 0);
-            }
+            seq = generateSequenceNumber(time);
         }
         else seq = Long.parseLong(parts[1]);
 

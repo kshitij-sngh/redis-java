@@ -240,7 +240,7 @@ public class Main {
                                     } catch (StreamException e) {
                                         encodedOutput = Resp.encodeError(e.getMessage());
                                     }
-                                    
+
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
                                 }
