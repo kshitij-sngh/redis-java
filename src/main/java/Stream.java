@@ -21,7 +21,12 @@ public class Stream {
     }
 
     public ConcurrentNavigableMap<StreamId, Map<String, String>> getRange(String start, String end) {
-        StreamId startId= parseInputId(start);
+        StreamId startId;
+        if("-".equals(start))
+            startId = entries.firstKey();
+        else
+            startId = parseInputId(start);
+
         StreamId endId = parseInputId(end);
 
         return entries.subMap(startId,true, endId, true);
