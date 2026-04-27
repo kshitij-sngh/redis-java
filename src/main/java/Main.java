@@ -270,7 +270,7 @@ public class Main {
                                         String kvEncodedArray = Resp.encodeArray(kvList);
 
 
-                                        innerArrays.add(Resp.encodeArray(List.of(streamIdEncodedBulkString, kvEncodedArray)));
+                                        innerArrays.add(Resp.joinAsRespArray(List.of(streamIdEncodedBulkString, kvEncodedArray)));
                                     }
                                     String encodedArray = Resp.encodeArray(innerArrays);
                                     outputStream.write(encodedArray.getBytes());

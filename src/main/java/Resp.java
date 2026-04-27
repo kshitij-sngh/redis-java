@@ -76,4 +76,12 @@ public class Resp {
     {
         return "-ERR "+err+"\r\n";
     }
+    static String joinAsRespArray(List<String> encodedElements)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("*").append(encodedElements.size()).append("\r\n");
+        for(String element: encodedElements)
+            sb.append(element);
+        return sb.toString();
+    }
 }
