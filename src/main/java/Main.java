@@ -234,9 +234,10 @@ public class Main {
                                         String v=inp[i+1];
                                         entryMap.put(k,v);
                                     }
-                                    stream.addEntry(streamId, entryMap);
-
+                                    String err = stream.addEntry(streamId, entryMap);
                                     String encodedOutput = Resp.encodeBulkString(streamId.getStreamIdAsString());
+                                    if(err!=null)
+                                        encodedOutput = Resp.encodeError(err);
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
                                 }

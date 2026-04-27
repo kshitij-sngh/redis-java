@@ -79,4 +79,9 @@ public class Resp {
         long seq = Long.parseLong(parts[1]);
         return new StreamId(time, seq);
     }
+
+    static String encodeError(String err)
+    {
+        return "-ERR "+err+"\r\n";
+    }
 }

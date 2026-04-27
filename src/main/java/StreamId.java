@@ -1,23 +1,27 @@
 import java.util.Objects;
 
 public class StreamId implements Comparable<StreamId>{
-    private final long time;
-    private final long sequence;
+    private final long millisecondsTime;
+    private final long sequenceNumber;
 
-    public StreamId(long time, long sequence) {
-        this.time = time;
-        this.sequence = sequence;
+    public StreamId(long time, long sequenceNumber) {
+        this.millisecondsTime = time;
+        this.sequenceNumber = sequenceNumber;
     }
 
     public String getStreamIdAsString()
     {
-        return time+Constants.STREAM_DELIMITER+sequence;
+        return millisecondsTime+Constants.STREAM_DELIMITER+ sequenceNumber;
+    }
+
+    public boolean isZero(){
+        return this.millisecondsTime==0 && this.sequenceNumber==0;
     }
     @Override
     public int compareTo(StreamId o) {
-        if(this.time==o.time)
-            return Long.compare(this.sequence, o.sequence);
-        return Long.compare(this.time, o.time);
+        if(this.millisecondsTime==o.millisecondsTime)
+            return Long.compare(this.sequenceNumber, o.sequenceNumber);
+        return Long.compare(this.millisecondsTime, o.millisecondsTime);
     }
 
     @Override
@@ -25,11 +29,11 @@ public class StreamId implements Comparable<StreamId>{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         StreamId streamId = (StreamId) o;
-        return time == streamId.time && sequence == streamId.sequence;
+        return millisecondsTime == streamId.millisecondsTime && sequenceNumber == streamId.sequenceNumber;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(time, sequence);
+        return Objects.hash(millisecondsTime, sequenceNumber);
     }
 }
