@@ -25,7 +25,7 @@ public class Stream {
             return new ConcurrentSkipListMap<>();
 
         StreamId startId = "-".equals(start) ? entries.firstKey() : parseInputId(start);
-        StreamId endId = "-".equals(end) ? entries.lastKey() : parseInputId(end);
+        StreamId endId = "+".equals(end) ? entries.lastKey() : parseInputId(end);
 
         if (entries.isEmpty()) return new ConcurrentSkipListMap<>();
         return entries.subMap(startId,true, endId, true);
