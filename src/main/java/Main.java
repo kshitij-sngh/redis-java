@@ -272,7 +272,7 @@ public class Main {
 
                                         innerArrays.add(Resp.joinAsRespArray(List.of(streamIdEncodedBulkString, kvEncodedArray)));
                                     }
-                                    String encodedArray = Resp.encodeArray(innerArrays);
+                                    String encodedArray = Resp.joinAsRespArray(innerArrays);
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
 
