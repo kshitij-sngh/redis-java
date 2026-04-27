@@ -71,4 +71,12 @@ public class Resp {
     {
         return "+"+s+"\r\n";
     }
+
+    static StreamId parseStreamId(String s)
+    {
+        String[] parts = s.split("-");
+        long time = Long.parseLong(parts[0]);
+        long seq = Long.parseLong(parts[1]);
+        return new StreamId(time, seq);
+    }
 }

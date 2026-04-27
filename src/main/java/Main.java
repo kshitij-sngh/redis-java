@@ -1,9 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -24,7 +22,7 @@ public class Main {
           ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, List<String>> listsMap = new ConcurrentHashMap<>();
-
+          ConcurrentHashMap<String, Stream> streamMap = new ConcurrentHashMap<>();
             while(true) {
                 // Wait for connection from client.
                 clientSocket = serverSocket.accept();
@@ -218,9 +216,25 @@ public class Main {
                                     String type = "none";
                                     if(mp.containsKey(inp[1]))
                                         type="string";
+                                    if(streamMap.containsKey(inp[1]))
+                                        type="stream";
                                     String encodedString = Resp.encodeSimpleString(type);
                                     outputStream.write(encodedString.getBytes());
                                     outputStream.flush();
+                                }
+                                else if("XADD".equals(inp[0]))
+                                {
+                                    String streamKey = inp[1];
+                                    Stream stream = streamMap.computeIfAbsent(streamKey, k->new Stream());
+                                    StreamId streamId = Resp.parseStreamId(inp[2]);
+                                    Map<String, String> entryMap = new HashMap<>();
+                                    for(int i=3; i<inp.length; i+=2)
+                                    {
+                                        String k=inp[i];
+                                        String v=inp[i+1];
+                                        entryMap.put(k,v);
+                                    }
+                                    stream.addEntry(streamId, entryMap);
                                 }
                             }
                         }
