@@ -263,28 +263,50 @@ public class Main {
                                 }
                                 else if("XREAD".equals(inp[0]))
                                 {
-                                    int numStreams = (inp.length-2)>>1;
-                                    List<String> xReadResponseArrays = new ArrayList<>();
-                                    for(int i=0; i<numStreams; i++)
-                                    {
-                                        String streamKey = inp[2+i];
-                                        String start=inp[2+i+numStreams];
-                                        String end="+";
+                                    if("STREAMS".equals(inp[1])) {
+                                        int numStreams = (inp.length - 2) >> 1;
+                                        List<String> xReadResponseArrays = new ArrayList<>();
+                                        for (int i = 0; i < numStreams; i++) {
+                                            String streamKey = inp[2 + i];
+                                            String start = inp[2 + i + numStreams];
+                                            String end = "+";
 
-                                        ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
-                                        if(streamMap.containsKey(streamKey))
-                                        {
-                                            Stream stream = streamMap.get(streamKey);
-                                            subEntries =stream.getRange(start,false, end);
+                                            ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
+                                            if (streamMap.containsKey(streamKey)) {
+                                                Stream stream = streamMap.get(streamKey);
+                                                subEntries = stream.getRange(start, false, end);
+                                            }
+
+                                            String encodedArray = Helper.getStreamRangeWithKeyArrayEncoded(streamKey, subEntries);
+                                            xReadResponseArrays.add(encodedArray);
                                         }
 
-                                        String encodedArray = Helper.getStreamRangeWithKeyArrayEncoded(streamKey, subEntries);
-                                        xReadResponseArrays.add(encodedArray);
+                                        String xReadResponseArraysEncoded = Resp.joinAsRespArray(xReadResponseArrays);
+                                        outputStream.write(xReadResponseArraysEncoded.getBytes());
+                                        outputStream.flush();
                                     }
+                                    else if("BLOCK".equals(inp[1])){
+                                        Long timeOutinMilliSecs = Long.parseLong(inp[2]);
+                                        List<String> xReadResponseArrays = new ArrayList<>();
+                                        String xReadResponseArraysEncoded;
 
-                                    String xReadResponseArraysEncoded = Resp.joinAsRespArray(xReadResponseArrays);
-                                    outputStream.write(xReadResponseArraysEncoded.getBytes());
-                                    outputStream.flush();
+                                        String streamKey = inp[4];
+                                        String start = inp[5];
+                                        String end = "+";
+
+                                        Stream stream = streamMap.computeIfAbsent(streamKey, k-> new Stream());
+                                        ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = stream.getRangeBlocking(start, false, end, timeOutinMilliSecs);;
+                                        if(!subEntries.isEmpty()) {
+                                            String encodedArray = Helper.getStreamRangeWithKeyArrayEncoded(streamKey, subEntries);
+                                            xReadResponseArrays.add(encodedArray);
+                                            xReadResponseArraysEncoded = Resp.joinAsRespArray(xReadResponseArrays);
+                                        }
+                                        else
+                                            xReadResponseArraysEncoded = Resp.encodeArray(null);
+
+                                        outputStream.write(xReadResponseArraysEncoded.getBytes());
+                                        outputStream.flush();
+                                    }
 
                                 }
                             }

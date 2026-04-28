@@ -17,6 +17,7 @@ public class Stream {
         }
 
         entries.put(id, values);
+        notifyAll();
         return id;
     }
 
@@ -29,6 +30,33 @@ public class Stream {
 
         if (entries.isEmpty()) return new ConcurrentSkipListMap<>();
         return entries.subMap(startId, startInclusive, endId, true);
+    }
+
+    public synchronized ConcurrentNavigableMap  <StreamId, Map<String, String>> getRangeBlocking(String start, boolean startInclusive, String end, Long timeOut) {
+        StreamId startId = "-".equals(start) ? new StreamId(0,0) : parseInputId(start);
+        StreamId endId = "+".equals(end) ? new StreamId(Long.MAX_VALUE, Long.MAX_VALUE) : parseInputId(end);
+
+        long endTime = System.currentTimeMillis()+timeOut;
+
+        ConcurrentNavigableMap<StreamId, Map<String, String>> results = entries.subMap(startId, startInclusive, endId, true);
+
+        try {
+            while (results.isEmpty()) {
+                long remainingTime = endTime - System.currentTimeMillis();
+                if (timeOut > 0 && remainingTime<=0) {
+                        break;
+                }
+                if(timeOut==0)
+                    wait();
+                else
+                    wait(remainingTime);
+            }
+        }
+        catch (InterruptedException e){
+            Thread.currentThread().interrupt();
+            return results;
+        }
+        return results;
     }
 
     private long generateSequenceNumber(long millisecondsTime)
