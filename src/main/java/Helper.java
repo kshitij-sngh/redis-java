@@ -25,4 +25,12 @@ public class Helper {
         }
         return innerArrays;
     }
+    public static String getStreamRangeWithKeyArrayEncoded(String streamKey, ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries){
+        String streamKeyBulk = Resp.encodeBulkString(streamKey);
+        List<String> innerArrays = Helper.convertSubMapToEncodedArray(subEntries);
+        String encodedInnerArrays = Resp.joinAsRespArray(innerArrays);
+        List<String> outerArray = List.of(streamKeyBulk,encodedInnerArrays);
+        String encodedArray = Resp.joinAsRespArray(outerArray);
+        return encodedArray;
+    }
 }

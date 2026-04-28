@@ -263,24 +263,27 @@ public class Main {
                                 }
                                 else if("XREAD".equals(inp[0]))
                                 {
-                                    String streamKey = inp[2];
-                                    String start=inp[3];
-                                    String end="+";
-
-                                    ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
-                                    if(streamMap.containsKey(streamKey))
+                                    int numStreams = (inp.length-2)>>1;
+                                    List<String> xReadResponseArrays = new ArrayList<>();
+                                    for(int i=0; i<numStreams; i++)
                                     {
-                                        Stream stream = streamMap.get(streamKey);
-                                        subEntries =stream.getRange(start,false, end);
-                                    }
-                                    String streamKeyBulk = Resp.encodeBulkString(streamKey);
-                                    List<String> innerArrays = Helper.convertSubMapToEncodedArray(subEntries);
-                                    String encodedInnerArrays = Resp.joinAsRespArray(innerArrays);
-                                    List<String> outerArray = List.of(streamKeyBulk,encodedInnerArrays);
-                                    String encodedArray = Resp.joinAsRespArray(outerArray);
+                                        String streamKey = inp[2+i];
+                                        String start=inp[2+i+numStreams];
+                                        String end="+";
 
-                                    String xReadResponse = Resp.joinAsRespArray(List.of(encodedArray));
-                                    outputStream.write(xReadResponse.getBytes());
+                                        ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = null;
+                                        if(streamMap.containsKey(streamKey))
+                                        {
+                                            Stream stream = streamMap.get(streamKey);
+                                            subEntries =stream.getRange(start,false, end);
+                                        }
+
+                                        String encodedArray = Helper.getStreamRangeWithKeyArrayEncoded(streamKey, subEntries);
+                                        xReadResponseArrays.add(encodedArray);
+                                    }
+
+                                    String xReadResponseArraysEncoded = Resp.joinAsRespArray(xReadResponseArrays);
+                                    outputStream.write(xReadResponseArraysEncoded.getBytes());
                                     outputStream.flush();
 
                                 }
