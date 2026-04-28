@@ -33,7 +33,12 @@ public class Stream {
     }
 
     public synchronized ConcurrentNavigableMap  <StreamId, Map<String, String>> getRangeBlocking(String start, boolean startInclusive, String end, Long timeOut) {
-        StreamId startId = "-".equals(start) ? new StreamId(0,0) : parseInputId(start);
+        StreamId startId;
+        if("$".equals(start))
+            startId = entries.isEmpty() ? new StreamId(0,0) : entries.lastKey();
+        else
+            startId = "-".equals(start) ? new StreamId(0,0) : parseInputId(start);
+
         StreamId endId = "+".equals(end) ? new StreamId(Long.MAX_VALUE, Long.MAX_VALUE) : parseInputId(end);
 
         long endTime = System.currentTimeMillis()+timeOut;
