@@ -263,7 +263,7 @@ public class Main {
                                 }
                                 else if("XREAD".equals(inp[0]))
                                 {
-                                    if("STREAMS".equals(inp[1])) {
+                                    if("STREAMS".equalsIgnoreCase(inp[1])) {
                                         int numStreams = (inp.length - 2) >> 1;
                                         List<String> xReadResponseArrays = new ArrayList<>();
                                         for (int i = 0; i < numStreams; i++) {
@@ -285,8 +285,8 @@ public class Main {
                                         outputStream.write(xReadResponseArraysEncoded.getBytes());
                                         outputStream.flush();
                                     }
-                                    else if("BLOCK".equals(inp[1])){
-                                        Long timeOutinMilliSecs = Long.parseLong(inp[2]);
+                                    else if("BLOCK".equalsIgnoreCase(inp[1])){
+                                        Long timeOutInMilliSecs = Long.parseLong(inp[2]);
                                         List<String> xReadResponseArrays = new ArrayList<>();
                                         String xReadResponseArraysEncoded;
 
@@ -295,7 +295,7 @@ public class Main {
                                         String end = "+";
 
                                         Stream stream = streamMap.computeIfAbsent(streamKey, k-> new Stream());
-                                        ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = stream.getRangeBlocking(start, false, end, timeOutinMilliSecs);;
+                                        ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries = stream.getRangeBlocking(start, false, end, timeOutInMilliSecs);;
                                         if(!subEntries.isEmpty()) {
                                             String encodedArray = Helper.getStreamRangeWithKeyArrayEncoded(streamKey, subEntries);
                                             xReadResponseArrays.add(encodedArray);
