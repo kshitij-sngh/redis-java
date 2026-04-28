@@ -5,4 +5,6 @@ public class Constants {
     public static final String STREAM_ADD_LESS_THAN_LAST_ERROR = "The ID specified in XADD is equal or smaller than the target stream top item";
 
     public static final String INC_KEY_NOT_INTEGER_ERROR = "value is not an integer or out of range";
+
+    public static final String EXEC_WITHOUT_MULTI_ERROR = "EXEC without MULTI";
 }
