@@ -40,11 +40,7 @@ public class Resp {
             num*=-1;
         }
         sb.append(sign);
-        while(num>0)
-        {
-            sb.append(num%10);
-            num/=10;
-        }
+        sb.append(num);
         sb.append("\r\n");
         return sb.toString();
     }
