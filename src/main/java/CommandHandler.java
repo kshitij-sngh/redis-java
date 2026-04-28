@@ -59,7 +59,7 @@ public class CommandHandler {
                     {
                         for(int i=2; i<inp.length; i++)
                             list.add(inp[i]);
-                        list.notify();
+                        list.notifyAll();
                     }
                     return Resp.encodeInteger(list.size());
 
