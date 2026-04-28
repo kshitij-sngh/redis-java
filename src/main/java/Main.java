@@ -307,7 +307,17 @@ public class Main {
                                 {
                                     String key=inp[1];
                                     Helper.removeExpiredFromKVMap(key, mp, expirationMap);
-                                    long newValue = Long.parseLong(mp.getOrDefault(key,"0"))+1;
+                                    long val;
+                                    try {
+                                        val = Long.parseLong(mp.getOrDefault(key,"0"));
+                                    }catch (NumberFormatException e)
+                                    {
+                                        outputStream.write(Resp.encodeError(Constants.INC_KEY_NOT_INTEGER_ERROR).getBytes());
+                                        outputStream.flush();
+                                        continue;
+                                    }
+
+                                    long newValue = val+1;
                                     mp.put(key, Long.toString(newValue));
 
                                     String encodedInteger = Resp.encodeInteger(newValue);
