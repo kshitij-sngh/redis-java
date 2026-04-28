@@ -36,13 +36,23 @@ public class Main {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     ) {
                         String line;
+                        Deque<String[]> transactionQueue = new ArrayDeque<>();
+                        TransactionStatus transactionStatus = TransactionStatus.NO;
                         while((line=reader.readLine())!=null)
                         {
                             String output = "";
-
                             if (line.startsWith("*")) {
                                 int length = Integer.parseInt(line.substring(1));
                                 String[] inp = Resp.decodeBulkString(reader, length);
+
+                                if(transactionStatus == TransactionStatus.PRE)
+                                {
+                                    transactionQueue.addLast(inp);
+                                    output=Resp.encodeSimpleString("QUEUED");
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                    continue;
+                                }
 
                                 if ("PING".equalsIgnoreCase(inp[0])) {
                                     output = "+PONG\r\n";
@@ -323,6 +333,13 @@ public class Main {
                                     String encodedInteger = Resp.encodeInteger(newValue);
 
                                     outputStream.write(encodedInteger.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("MULTI".equalsIgnoreCase(inp[0]))
+                                {
+                                    transactionStatus = TransactionStatus.PRE;
+                                    output=Resp.encodeSimpleString("OK");
+                                    outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
                             }
