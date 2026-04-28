@@ -68,11 +68,8 @@ public class Main {
                                 }
                                 else if("GET".equalsIgnoreCase(inp[0]))
                                 {
-                                    if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
-                                    {
-                                        expirationMap.remove(inp[1]);
-                                        mp.remove(inp[1]);
-                                    }
+                                    Helper.removeExpiredFromKVMap(inp[1],mp, expirationMap);
+
                                     output = mp.getOrDefault(inp[1], null);
                                     String encodeBulkString = Resp.encodeBulkString(output);
                                     outputStream.write(encodeBulkString.getBytes());
@@ -209,11 +206,8 @@ public class Main {
                                 }
                                 else if("TYPE".equalsIgnoreCase(inp[0]))
                                 {
-                                    if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
-                                    {
-                                        expirationMap.remove(inp[1]);
-                                        mp.remove(inp[1]);
-                                    }
+                                    Helper.removeExpiredFromKVMap(inp[1], mp, expirationMap);
+
                                     String type = "none";
                                     if(mp.containsKey(inp[1]))
                                         type="string";
@@ -308,6 +302,18 @@ public class Main {
                                         outputStream.flush();
                                     }
 
+                                }
+                                else if("INCR".equalsIgnoreCase(inp[0]))
+                                {
+                                    String key=inp[1];
+                                    Helper.removeExpiredFromKVMap(key, mp, expirationMap);
+                                    Long newValue = Long.parseLong(mp.getOrDefault(key,"0"))+1;
+                                    mp.put(key, newValue.toString());
+
+                                    String encodedInteger = Resp.encodeInteger(newValue);
+
+                                    outputStream.write(encodedInteger.getBytes());
+                                    outputStream.flush();
                                 }
                             }
                         }

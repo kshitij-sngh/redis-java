@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
 public class Helper {
@@ -32,5 +33,14 @@ public class Helper {
         List<String> outerArray = List.of(streamKeyBulk,encodedInnerArrays);
         String encodedArray = Resp.joinAsRespArray(outerArray);
         return encodedArray;
+    }
+    public static void removeExpiredFromKVMap(String key, ConcurrentHashMap<String,String> mp,
+                            ConcurrentHashMap<String, Long> expirationMap)
+    {
+        if(expirationMap.containsKey(key) && expirationMap.get(key)<System.currentTimeMillis())
+        {
+            expirationMap.remove(key);
+            mp.remove(key);
+        }
     }
 }

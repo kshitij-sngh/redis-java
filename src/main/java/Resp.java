@@ -26,7 +26,7 @@ public class Resp {
         sb.append("\r\n");
         return sb.toString();
     }
-    static String encodeInteger(int num)
+    static String encodeInteger(long num)
     {
         if(num==0)
             return ":0\r\n";
