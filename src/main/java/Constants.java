@@ -7,4 +7,6 @@ public class Constants {
     public static final String INC_KEY_NOT_INTEGER_ERROR = "value is not an integer or out of range";
 
     public static final String EXEC_WITHOUT_MULTI_ERROR = "EXEC without MULTI";
+
+    public static final String DISCARD_WITHOUT_MULTI_ERROR = "DISCARD without MULTI";
 }

@@ -46,36 +46,41 @@ public class Main {
                                 int length = Integer.parseInt(line.substring(1));
                                 String[] inp = Resp.decodeBulkString(reader, length);
 
-                                if("MULTI".equalsIgnoreCase(inp[0]))
-                                {
+                                if ("MULTI".equalsIgnoreCase(inp[0])) {
                                     transactionStatus = TransactionStatus.PRE;
-                                    output=Resp.encodeSimpleString("OK");
+                                    output = Resp.encodeSimpleString("OK");
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
-                                }
-                                else if("EXEC".equalsIgnoreCase(inp[0]))
-                                {
-                                    if(transactionStatus!=TransactionStatus.PRE)
-                                    {
-                                        output=Resp.encodeError(Constants.EXEC_WITHOUT_MULTI_ERROR);
+                                } else if ("EXEC".equalsIgnoreCase(inp[0])) {
+                                    if (transactionStatus != TransactionStatus.PRE) {
+                                        output = Resp.encodeError(Constants.EXEC_WITHOUT_MULTI_ERROR);
                                         outputStream.write(output.getBytes());
                                         outputStream.flush();
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         transactionStatus = TransactionStatus.EXECUTING;
                                         List<String> results = new ArrayList<>();
-                                        while(!transactionQueue.isEmpty())
-                                        {
+                                        while (!transactionQueue.isEmpty()) {
                                             String result = commandHandler.handle(transactionQueue.removeFirst());
                                             results.add(result);
                                         }
-                                        transactionStatus=TransactionStatus.NO;
-                                        output=Resp.joinAsRespArray(results);
+                                        transactionStatus = TransactionStatus.NO;
+                                        output = Resp.joinAsRespArray(results);
                                         outputStream.write(output.getBytes());
                                         outputStream.flush();
                                     }
 
+                                } else if ("DISCARD".equalsIgnoreCase(inp[0]))
+                                {
+                                    if(transactionStatus!=TransactionStatus.PRE)
+                                        output=Resp.encodeError(Constants.DISCARD_WITHOUT_MULTI_ERROR);
+                                    else
+                                    {
+                                        transactionQueue.clear();
+                                        transactionStatus=TransactionStatus.NO;
+                                        output=Resp.encodeSimpleString("OK");
+                                    }
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
                                 }
                                 else
                                 {
