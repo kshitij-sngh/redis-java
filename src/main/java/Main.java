@@ -44,17 +44,17 @@ public class Main {
                                 int length = Integer.parseInt(line.substring(1));
                                 String[] inp = Resp.decodeBulkString(reader, length);
 
-                                if ("PING".equals(inp[0])) {
+                                if ("PING".equalsIgnoreCase(inp[0])) {
                                     output = "+PONG\r\n";
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
-                                } else if ("ECHO".equals(inp[0])) {
+                                } else if ("ECHO".equalsIgnoreCase(inp[0])) {
                                     output = inp[1];
                                     String encodeBulkString = Resp.encodeBulkString(output);
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("SET".equals(inp[0]))
+                                else if("SET".equalsIgnoreCase(inp[0]))
                                 {
                                     mp.put(inp[1], inp[2]);
                                     if(inp.length == 5 && "PX".equals(inp[3]))
@@ -66,7 +66,7 @@ public class Main {
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("GET".equals(inp[0]))
+                                else if("GET".equalsIgnoreCase(inp[0]))
                                 {
                                     if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
                                     {
@@ -78,7 +78,7 @@ public class Main {
                                     outputStream.write(encodeBulkString.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("RPUSH".equals(inp[0]))
+                                else if("RPUSH".equalsIgnoreCase(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
                                     synchronized (list)
@@ -91,7 +91,7 @@ public class Main {
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("LRANGE".equals(inp[0]))
+                                else if("LRANGE".equalsIgnoreCase(inp[0]))
                                 {
                                     List<String> list = listsMap.getOrDefault(inp[1], null);
                                     List<String> rangeList = new ArrayList<>();
@@ -114,7 +114,7 @@ public class Main {
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("LPUSH".equals(inp[0]))
+                                else if("LPUSH".equalsIgnoreCase(inp[0]))
                                 {
                                     List<String> list = listsMap.computeIfAbsent(inp[1], key->new CopyOnWriteArrayList<String>());
                                     synchronized (list) {
@@ -128,7 +128,7 @@ public class Main {
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
-                                else if ("LLEN".equals(inp[0]))
+                                else if ("LLEN".equalsIgnoreCase(inp[0]))
                                 {
                                     List<String> list = listsMap.get(inp[1]);
                                     int size = (list==null)?0:list.size();
@@ -136,7 +136,7 @@ public class Main {
                                     outputStream.write(encodedInteger.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("LPOP".equals(inp[0]))
+                                else if("LPOP".equalsIgnoreCase(inp[0]))
                                 {
                                     if(inp.length==2)
                                     {
@@ -171,7 +171,7 @@ public class Main {
                                         outputStream.flush();
                                     }
                                 }
-                                else if("BLPOP".equals(inp[0]))
+                                else if("BLPOP".equalsIgnoreCase(inp[0]))
                                 {
                                     String key = inp[1];
                                     float timeout=Float.parseFloat(inp[2]);
@@ -207,7 +207,7 @@ public class Main {
                                     outputStream.write(encodedArray.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("TYPE".equals(inp[0]))
+                                else if("TYPE".equalsIgnoreCase(inp[0]))
                                 {
                                     if(expirationMap.containsKey(inp[1]) && expirationMap.get(inp[1])<System.currentTimeMillis())
                                     {
@@ -223,7 +223,7 @@ public class Main {
                                     outputStream.write(encodedString.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("XADD".equals(inp[0]))
+                                else if("XADD".equalsIgnoreCase(inp[0]))
                                 {
                                     String streamKey = inp[1];
                                     Stream stream = streamMap.computeIfAbsent(streamKey, k->new Stream());
@@ -245,7 +245,7 @@ public class Main {
                                     outputStream.write(encodedOutput.getBytes());
                                     outputStream.flush();
                                 }
-                                else if("XRANGE".equals(inp[0]))
+                                else if("XRANGE".equalsIgnoreCase(inp[0]))
                                 {
                                     String streamKey = inp[1];
                                     String start=inp[2], end=inp[3];
@@ -261,7 +261,7 @@ public class Main {
                                     outputStream.flush();
 
                                 }
-                                else if("XREAD".equals(inp[0]))
+                                else if("XREAD".equalsIgnoreCase(inp[0]))
                                 {
                                     if("STREAMS".equalsIgnoreCase(inp[1])) {
                                         int numStreams = (inp.length - 2) >> 1;
