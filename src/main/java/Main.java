@@ -307,8 +307,8 @@ public class Main {
                                 {
                                     String key=inp[1];
                                     Helper.removeExpiredFromKVMap(key, mp, expirationMap);
-                                    Long newValue = Long.parseLong(mp.getOrDefault(key,"0"))+1;
-                                    mp.put(key, newValue.toString());
+                                    long newValue = Long.parseLong(mp.getOrDefault(key,"0"))+1;
+                                    mp.put(key, Long.toString(newValue));
 
                                     String encodedInteger = Resp.encodeInteger(newValue);
 
