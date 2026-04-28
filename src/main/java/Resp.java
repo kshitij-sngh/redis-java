@@ -28,21 +28,7 @@ public class Resp {
     }
     static String encodeInteger(long num)
     {
-        if(num==0)
-            return ":0\r\n";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(":");
-        char sign='+';
-        if(num<0)
-        {
-            sign='-';
-            num*=-1;
-        }
-        sb.append(sign);
-        sb.append(num);
-        sb.append("\r\n");
-        return sb.toString();
+        return ":0"+num+"\r\n";
     }
     static String encodeArray(List<String> list)
     {
