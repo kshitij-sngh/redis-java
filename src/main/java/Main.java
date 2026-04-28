@@ -67,7 +67,7 @@ public class Main {
                                         List<String> results = new ArrayList<>();
                                         while(!transactionQueue.isEmpty())
                                         {
-                                            String result = commandHandler.handle(transactionQueue.getFirst());
+                                            String result = commandHandler.handle(transactionQueue.removeFirst());
                                             results.add(result);
                                         }
                                         transactionStatus=TransactionStatus.NO;
