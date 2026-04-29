@@ -271,6 +271,8 @@ public class CommandHandler {
 
                     return Resp.encodeInteger(newValue);
 
+                case "WATCH":
+                    return Resp.encodeSimpleString("OK");
                 default:
                     return Resp.encodeError("ERR unknown command '" + command + "'");
             }
