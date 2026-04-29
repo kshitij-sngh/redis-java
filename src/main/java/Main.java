@@ -86,7 +86,7 @@ public class Main {
                                 }
                                 else if("WATCH".equalsIgnoreCase(inp[0]))
                                 {
-                                    if(transactionStatus!=TransactionStatus.PRE)
+                                    if(transactionStatus!=TransactionStatus.NO)
                                         output=Resp.encodeError(Constants.WATCH_INSIDE_MULTI_ERROR);
                                     else
                                         output = Resp.encodeSimpleString("OK");
