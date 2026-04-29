@@ -102,6 +102,7 @@ public class Main {
                                         output=Resp.encodeError(Constants.DISCARD_WITHOUT_MULTI_ERROR);
                                     else
                                     {
+                                        Helper.unwatchAll(clientState, watchRegistry);
                                         transactionQueue.clear();
                                         clientState.setTransactionStatus(TransactionStatus.NO);
                                         output=Resp.encodeSimpleString("OK");
