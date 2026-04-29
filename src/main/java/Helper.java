@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
@@ -42,5 +43,15 @@ public class Helper {
             expirationMap.remove(key);
             mp.remove(key);
         }
+    }
+
+    public static void unwatchAll(ClientState clientState, ConcurrentHashMap<String, Set<ClientState>> watchRegistry)
+    {
+        List<String> keys=clientState.getWatchedKeys();
+        for(String key: keys)
+            watchRegistry.get(key).remove(clientState);
+
+        keys.clear();
+        clientState.setDirty(false);
     }
 }

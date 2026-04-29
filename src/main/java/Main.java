@@ -86,6 +86,8 @@ public class Main {
                                                 results.add(result);
                                             }
                                         }finally {
+                                            Helper.unwatchAll(clientState,watchRegistry);
+                                            clientState.setTransactionStatus(TransactionStatus.NO);
                                             globalLock.writeLock().unlock();
                                         }
                                         clientState.setTransactionStatus(TransactionStatus.NO);
@@ -117,10 +119,19 @@ public class Main {
                                             String key = inp[i];
                                             watchRegistry.computeIfAbsent(key, k-> ConcurrentHashMap.newKeySet()
                                             ).add(clientState);
+                                            clientState.getWatchedKeys().add(key);
                                         }
                                         output = Resp.encodeSimpleString("OK");
                                     }
 
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                }
+                                else if("UNWATCH".equalsIgnoreCase(inp[0]))
+                                {
+                                    Helper.unwatchAll(clientState, watchRegistry);
+
+                                    output=Resp.encodeSimpleString("OK");
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
@@ -146,6 +157,10 @@ public class Main {
                     catch (IOException e)
                     {
                         System.out.println("IOException: " + e.getMessage());
+                    }
+                    finally {
+                        Helper.unwatchAll(clientState, watchRegistry);
+                        System.out.println("Client disconnected and watch registry cleaned up.");
                     }
                 }).start();
             }
