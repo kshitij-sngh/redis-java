@@ -39,6 +39,8 @@ public class Main {
                         String line;
                         Deque<String[]> transactionQueue = new ArrayDeque<>();
                         TransactionStatus transactionStatus = TransactionStatus.NO;
+                        Map<String, String> watchedMap = new HashMap<>();
+
                         while((line=reader.readLine())!=null)
                         {
                             String output = "";
@@ -82,6 +84,16 @@ public class Main {
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
+                                else if("WATCH".equalsIgnoreCase(inp[0]))
+                                {
+                                    if(transactionStatus!=TransactionStatus.PRE)
+                                        output=Resp.encodeError(Constants.WATCH_INSIDE_MULTI_ERROR);
+                                    else
+                                        output = Resp.encodeSimpleString("OK");
+                                    
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                }
                                 else
                                 {
                                     if(transactionStatus == TransactionStatus.PRE)
@@ -105,7 +117,7 @@ public class Main {
                     {
                         System.out.println("IOException: " + e.getMessage());
                     }
-                }).start();
+                }).start;
             }
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
