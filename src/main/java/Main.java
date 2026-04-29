@@ -3,8 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Main {
   public static void main(String[] args){
@@ -20,14 +19,21 @@ public class Main {
           // Since the tester restarts your program quite often, setting SO_REUSEADDR
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
+
           ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, List<String>> listsMap = new ConcurrentHashMap<>();
           ConcurrentHashMap<String, Stream> streamMap = new ConcurrentHashMap<>();
-          CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap);
+
+          ConcurrentHashMap<String, Set<ClientState>> watchRegistry = new ConcurrentHashMap<>();
+          final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock(true);
+
+          CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap, globalLock, watchRegistry);
+
             while(true) {
                 // Wait for connection from client.
                 clientSocket = serverSocket.accept();
+                final ClientState clientState = new ClientState();
 
                 final Socket finalClientSocket1 = clientSocket;
                 new Thread(()->{
@@ -37,9 +43,8 @@ public class Main {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     ) {
                         String line;
+                        //final ClientState finalClientState = clientState;
                         Deque<String[]> transactionQueue = new ArrayDeque<>();
-                        TransactionStatus transactionStatus = TransactionStatus.NO;
-                        Map<String, String> watchedMap = new HashMap<>();
 
                         while((line=reader.readLine())!=null)
                         {
@@ -49,23 +54,41 @@ public class Main {
                                 String[] inp = Resp.decodeBulkString(reader, length);
 
                                 if ("MULTI".equalsIgnoreCase(inp[0])) {
-                                    transactionStatus = TransactionStatus.PRE;
+                                    clientState.setTransactionStatus(TransactionStatus.PRE);
                                     output = Resp.encodeSimpleString("OK");
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 } else if ("EXEC".equalsIgnoreCase(inp[0])) {
-                                    if (transactionStatus != TransactionStatus.PRE) {
+                                    if (clientState.getTransactionStatus() != TransactionStatus.PRE) {
                                         output = Resp.encodeError(Constants.EXEC_WITHOUT_MULTI_ERROR);
                                         outputStream.write(output.getBytes());
                                         outputStream.flush();
                                     } else {
-                                        transactionStatus = TransactionStatus.EXECUTING;
+                                        clientState.setTransactionStatus(TransactionStatus.EXECUTING);
                                         List<String> results = new ArrayList<>();
-                                        while (!transactionQueue.isEmpty()) {
-                                            String result = commandHandler.handle(transactionQueue.removeFirst());
-                                            results.add(result);
+
+                                        globalLock.writeLock().lock();
+                                        try {
+                                            if(clientState.isDirty())
+                                            {
+                                                transactionQueue.clear();
+                                                clientState.setTransactionStatus(TransactionStatus.NO);
+
+                                                output = Resp.encodeArray(null);
+                                                outputStream.write(output.getBytes());
+                                                outputStream.flush();
+
+                                                continue;
+                                            }
+
+                                            while (!transactionQueue.isEmpty()) {
+                                                String result = commandHandler.handle(transactionQueue.removeFirst());
+                                                results.add(result);
+                                            }
+                                        }finally {
+                                            globalLock.writeLock().unlock();
                                         }
-                                        transactionStatus = TransactionStatus.NO;
+                                        clientState.setTransactionStatus(TransactionStatus.NO);
                                         output = Resp.joinAsRespArray(results);
                                         outputStream.write(output.getBytes());
                                         outputStream.flush();
@@ -73,12 +96,12 @@ public class Main {
 
                                 } else if ("DISCARD".equalsIgnoreCase(inp[0]))
                                 {
-                                    if(transactionStatus!=TransactionStatus.PRE)
+                                    if(clientState.getTransactionStatus()!=TransactionStatus.PRE)
                                         output=Resp.encodeError(Constants.DISCARD_WITHOUT_MULTI_ERROR);
                                     else
                                     {
                                         transactionQueue.clear();
-                                        transactionStatus=TransactionStatus.NO;
+                                        clientState.setTransactionStatus(TransactionStatus.NO);
                                         output=Resp.encodeSimpleString("OK");
                                     }
                                     outputStream.write(output.getBytes());
@@ -86,17 +109,24 @@ public class Main {
                                 }
                                 else if("WATCH".equalsIgnoreCase(inp[0]))
                                 {
-                                    if(transactionStatus!=TransactionStatus.NO)
+                                    if(clientState.getTransactionStatus()!=TransactionStatus.NO)
                                         output=Resp.encodeError(Constants.WATCH_INSIDE_MULTI_ERROR);
-                                    else
+                                    else {
+                                        for(int i=1; i<inp.length; i++)
+                                        {
+                                            String key = inp[1];
+                                            watchRegistry.computeIfAbsent(key, k-> ConcurrentHashMap.newKeySet()
+                                            ).add(clientState);
+                                        }
                                         output = Resp.encodeSimpleString("OK");
+                                    }
 
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
                                 else
                                 {
-                                    if(transactionStatus == TransactionStatus.PRE)
+                                    if(clientState.getTransactionStatus() == TransactionStatus.PRE)
                                     {
                                         transactionQueue.addLast(inp);
                                         output=Resp.encodeSimpleString("QUEUED");

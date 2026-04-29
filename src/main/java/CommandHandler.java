@@ -2,20 +2,37 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CommandHandler {
     private final ConcurrentHashMap<String,String> mp;
     private final ConcurrentHashMap<String, Long> expirationMap;
     private final ConcurrentHashMap<String, List<String>> listsMap;
     private final ConcurrentHashMap<String, Stream> streamMap;
-
-    public CommandHandler(ConcurrentHashMap<String, String> mp, ConcurrentHashMap<String, Long> expirationMap, ConcurrentHashMap<String, List<String>> listsMap, ConcurrentHashMap<String, Stream> streamMap) {
+    private final ReentrantReadWriteLock globalLock;
+    private final ConcurrentHashMap<String, Set<ClientState>> watchRegistry;
+    public CommandHandler(ConcurrentHashMap<String, String> mp, ConcurrentHashMap<String, Long> expirationMap, ConcurrentHashMap<String, List<String>> listsMap, ConcurrentHashMap<String, Stream> streamMap, ReentrantReadWriteLock globalLock, ConcurrentHashMap<String, Set<ClientState>> watchRegistry) {
         this.mp = mp;
         this.expirationMap = expirationMap;
         this.listsMap = listsMap;
         this.streamMap = streamMap;
+        this.globalLock = globalLock;
+        this.watchRegistry = watchRegistry;
     }
 
+    private void notifyWatchers(String key)
+    {
+        Set<ClientState> watchers = watchRegistry.get(key);
+        if(watchers!=null)
+        {
+            for(ClientState cs: watchers)
+            {
+                if(cs.getTransactionStatus() == TransactionStatus.PRE)
+                    cs.setDirty(true);
+            }
+        }
+    }
     public String handle(String[] inp)
     {
         String command = inp[0].toUpperCase();
@@ -27,6 +44,10 @@ public class CommandHandler {
         String key;
         Stream stream;
         ConcurrentNavigableMap<StreamId, Map<String, String>> subEntries;
+
+        boolean isWriteOp = Constants.WRITE_COMMANDS.contains(inp);
+        Lock lock = isWriteOp ? globalLock.writeLock() : globalLock.readLock();
+        lock.lock();
         try{
             switch (command){
                 case "PING":
@@ -38,11 +59,13 @@ public class CommandHandler {
                     return Resp.encodeBulkString(output);
 
                 case "SET":
+                    key=inp[1];
                     mp.put(inp[1], inp[2]);
                     if(inp.length == 5 && "PX".equals(inp[3]))
                         expirationMap.put(inp[1],System.currentTimeMillis()+Long.parseLong(inp[4]));
                     else
                         expirationMap.remove(inp[1]);
+                    notifyWatchers(key);
 
                     output="OK";
                     return Resp.encodeSimpleString(output);
@@ -268,7 +291,7 @@ public class CommandHandler {
 
                     long newValue = val+1;
                     mp.put(key, Long.toString(newValue));
-
+                    notifyWatchers(key);
                     return Resp.encodeInteger(newValue);
 
                 default:
@@ -277,6 +300,9 @@ public class CommandHandler {
         }
         catch (Exception e) {
             return Resp.encodeError("ERR " + e.getMessage());
+        }
+        finally {
+            lock.unlock();
         }
     }
 }
