@@ -90,7 +90,7 @@ public class Main {
                                         output=Resp.encodeError(Constants.WATCH_INSIDE_MULTI_ERROR);
                                     else
                                         output = Resp.encodeSimpleString("OK");
-                                    
+
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
@@ -117,7 +117,7 @@ public class Main {
                     {
                         System.out.println("IOException: " + e.getMessage());
                     }
-                }).start;
+                }).start();
             }
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
