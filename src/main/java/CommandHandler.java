@@ -311,6 +311,11 @@ public class CommandHandler {
 
                     return Resp.encodeInteger(newValue);
 
+                case "WAIT":
+                    int numReplicas = Integer.parseInt(inp[1]);
+                    long timeoutInMilliSecs= Long.parseLong(inp[2]);
+
+                    return Resp.encodeInteger(0);
                 default:
                     return Resp.encodeError("ERR unknown command '" + command + "'");
             }
