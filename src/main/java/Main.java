@@ -104,7 +104,7 @@ public class Main {
                                     break;
                                 readBytes += actualReadBytes;
                             }
-
+                            System.out.println(Arrays.toString(rdbBuffer));
                             System.out.println("RDB processed successfully");
                         }
                     }catch (IOException e)
