@@ -64,15 +64,17 @@ public class Main {
             try (Socket masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort())) {
                 OutputStream masterOutputStream = masterSocket.getOutputStream();
                 InputStream masterInputStream = masterSocket.getInputStream();
-
+                BufferedReader reader = new BufferedReader(new InputStreamReader(masterInputStream));
+                String line;
+                
                 Helper.sendCommandToMaster(masterOutputStream, List.of("PING") );
-                Helper.recieveFromToMaster(masterInputStream);
+                line=reader.readLine();
 
                 Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "listening-port", "6380"));
-                Helper.recieveFromToMaster(masterInputStream);
+                line=reader.readLine();
 
                 Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF","capa", "psync2"));
-                Helper.recieveFromToMaster(masterInputStream);
+                line=reader.readLine();
             }
 
 

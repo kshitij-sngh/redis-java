@@ -84,16 +84,5 @@ public class Helper {
     public static void sendCommandToMaster(OutputStream masterSocketOutputStream, List<String> command) throws IOException {
         masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
         masterSocketOutputStream.flush();
-        command.clear();
-    }
-    public static List<String> recieveFromToMaster(InputStream masterSocketInputStream) throws IOException {
-        String line;
-        List<String> res = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(masterSocketInputStream));
-        while((line=reader.readLine())!=null)
-        {
-            res.add(line);
-        }
-        return res;
     }
 }
