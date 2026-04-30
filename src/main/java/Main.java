@@ -216,7 +216,8 @@ public class Main {
                                 byte[] fileContentsDecodedBytes = Base64.getDecoder().decode(Constants.EMPTY_RDB_FILE_ENCODED);
                                 sb.append(fileContentsDecodedBytes.length);
                                 sb.append("\r\n");
-                                sb.append(fileContentsDecodedBytes);
+                                for(byte b: fileContentsDecodedBytes)
+                                    sb.append(b);
 
                                 output=sb.toString();
                                 outputStream.write(output.getBytes());
