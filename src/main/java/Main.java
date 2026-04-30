@@ -161,6 +161,8 @@ public class Main {
                                 if(inp.length>=2 && "replication".equalsIgnoreCase(inp[1]))
                                 {
                                     output = "# Replication\nrole:"+serverState.getReplicationRole();
+                                    output = Resp.encodeBulkString(output);
+
                                     outputStream.write(output.getBytes());
                                     outputStream.flush();
                                 }
