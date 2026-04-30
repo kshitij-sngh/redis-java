@@ -210,6 +210,17 @@ public class Main {
                                 output=Resp.encodeSimpleString("FULLRESYNC "+serverState.getMasterReplicationId()+" "+serverState.getMasterReplicationOffset());
                                 outputStream.write(output.getBytes());
                                 outputStream.flush();
+
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("$");
+                                byte[] fileContentsDecodedBytes = Base64.getDecoder().decode(Constants.EMPTY_RDB_FILE_ENCODED);
+                                sb.append(fileContentsDecodedBytes.length);
+                                sb.append("\r\n");
+                                sb.append(fileContentsDecodedBytes);
+
+                                output=sb.toString();
+                                outputStream.write(output.getBytes());
+                                outputStream.flush();
                             }
                             else
                             {

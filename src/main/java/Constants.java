@@ -3,8 +3,6 @@ import java.util.List;
 public class Constants {
 
     public static final int DEFAULT_PORT = 6379;
-
-    public static final List<String> serverAllowedReplicationRoles = List.of("master", "slave");
     public static final List<String> WRITE_COMMANDS = List.of("SET", "INCR");
     public static final String STREAM_DELIMITER = "-";
 
@@ -18,4 +16,6 @@ public class Constants {
     public static final String DISCARD_WITHOUT_MULTI_ERROR = "DISCARD without MULTI";
 
     public static final String WATCH_INSIDE_MULTI_ERROR = "WATCH inside MULTI is not allowed";
+
+    public static final String EMPTY_RDB_FILE_ENCODED = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
 }
