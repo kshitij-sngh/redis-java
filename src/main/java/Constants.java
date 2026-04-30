@@ -2,6 +2,7 @@ import java.util.List;
 
 public class Constants {
 
+    public static final int DEFAULT_PORT = 6379;
     public static final List<String> WRITE_COMMANDS = List.of("SET", "INCR");
     public static final String STREAM_DELIMITER = "-";
 
