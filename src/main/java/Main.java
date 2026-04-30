@@ -238,7 +238,7 @@ public class Main {
                     Helper.unwatchAll(clientState, watchRegistry);
                     System.out.println("Client disconnected and watch registry cleaned up.");
                 }
-            }).start;
+            }).start();
         }
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
