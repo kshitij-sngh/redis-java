@@ -96,10 +96,10 @@ public class Main {
                             int rdbLength = Integer.parseInt(line.substring(1));
                             System.out.println("Processing RDB of length: "+rdbLength);
 
-                            byte[] rdbBuffer = new byte[rdbLength];
+                            char[] rdbBuffer = new char[rdbLength];
                             int readBytes=0;
                             while(readBytes<rdbLength) {
-                                int actualReadBytes = masterInputStream.read(rdbBuffer, readBytes, rdbLength - readBytes);
+                                int actualReadBytes = masterInputStreamReader.read(rdbBuffer, readBytes, rdbLength - readBytes);
                                 if (actualReadBytes == -1)
                                     break;
                                 readBytes += actualReadBytes;
