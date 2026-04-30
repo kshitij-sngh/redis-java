@@ -199,6 +199,12 @@ public class Main {
                                     outputStream.flush();
                                 }
                             }
+                            else if("REPLCONF".equalsIgnoreCase(inp[0]))
+                            {
+                                output=Resp.encodeSimpleString("OK");
+                                outputStream.write(output.getBytes());
+                                outputStream.flush();
+                            }
                             else
                             {
                                 if(clientState.getTransactionStatus() == TransactionStatus.PRE)
