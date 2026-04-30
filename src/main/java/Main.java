@@ -56,31 +56,75 @@ public class Main {
         ConcurrentHashMap<String, Set<ClientState>> watchRegistry = new ConcurrentHashMap<>();
         final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock(true);
 
-        CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap, globalLock, watchRegistry);
+        CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap, globalLock, watchRegistry, serverState);
+
 
         //Slave Handshake
         if(!serverState.isMaster())
         {
-            try (Socket masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort())) {
-                OutputStream masterOutputStream = masterSocket.getOutputStream();
-                InputStream masterInputStream = masterSocket.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(masterInputStream));
-                String line;
+            new Thread(()->{
+                //CODE here
+                try {
+                    String line;
+                    Socket masterSocket;
+                    OutputStream masterOutputStream;
+                    InputStream masterInputStream;
+                    BufferedReader masterInputStreamReader = null;
 
-                Helper.sendCommandToMaster(masterOutputStream, List.of("PING") );
-                line=reader.readLine();
+                    try {
 
-                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "listening-port", "6380"));
-                line=reader.readLine();
+                        masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort());
+                        masterOutputStream = masterSocket.getOutputStream();
+                        masterInputStream = masterSocket.getInputStream();
+                        masterInputStreamReader = new BufferedReader(new InputStreamReader(masterInputStream));
 
-                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF","capa", "psync2"));
-                line=reader.readLine();
+                        Helper.sendCommandToMaster(masterOutputStream, List.of("PING"));
+                        line = masterInputStreamReader.readLine();
 
-                Helper.sendCommandToMaster(masterOutputStream, List.of("PSYNC", "?", "-1"));
-                line=reader.readLine();
-            }
+                        Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "listening-port", Integer.toString(serverState.getPort())));
+                        line = masterInputStreamReader.readLine();
 
+                        Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "capa", "psync2"));
+                        line = masterInputStreamReader.readLine();
 
+                        Helper.sendCommandToMaster(masterOutputStream, List.of("PSYNC", "?", "-1"));
+                        line = masterInputStreamReader.readLine();
+                        //processing RDB file, draining RDB here
+                        line = masterInputStreamReader.readLine();
+                        if(line!=null && line.startsWith("$"))
+                        {
+                            int rdbLength = Integer.parseInt(line.substring(1));
+                            System.out.println("Processing RDB of length: "+rdbLength);
+
+                            long skipped = 0;
+                            while(skipped<rdbLength)
+                                skipped += masterInputStream.skip(rdbLength-skipped);
+
+                            System.out.println("RDB processed successfully");
+                        }
+                    }catch (IOException e)
+                    {
+                        System.out.println("Handshake IOException: " + e.getMessage());
+                    }
+
+                    while ((line = masterInputStreamReader.readLine()) != null)
+                    {
+                        if (line.startsWith("*")) {
+                            int length = Integer.parseInt(line.substring(1));
+                            String[] inp = Resp.decodeBulkString(masterInputStreamReader, length);
+
+                            String output= commandHandler.handle(inp);
+                        }
+                        else if(line.startsWith("$"))
+                        {
+
+                        }
+                    }
+                }catch (IOException e)
+                {
+                    System.out.println("Propagation IOException: " + e.getMessage());
+                }
+            }).start();
         }
         while(true) {
             // Wait for connection from client.
@@ -217,6 +261,8 @@ public class Main {
                                 outputStream.write(output.getBytes());
                                 outputStream.write(fileContentsDecodedBytes);
                                 outputStream.flush();
+
+                                serverState.masterReplicationSlavesAddSlave(outputStream);
                             }
                             else
                             {

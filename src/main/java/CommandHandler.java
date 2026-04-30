@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -12,13 +15,15 @@ public class CommandHandler {
     private final ConcurrentHashMap<String, Stream> streamMap;
     private final ReentrantReadWriteLock globalLock;
     private final ConcurrentHashMap<String, Set<ClientState>> watchRegistry;
-    public CommandHandler(ConcurrentHashMap<String, String> mp, ConcurrentHashMap<String, Long> expirationMap, ConcurrentHashMap<String, List<String>> listsMap, ConcurrentHashMap<String, Stream> streamMap, ReentrantReadWriteLock globalLock, ConcurrentHashMap<String, Set<ClientState>> watchRegistry) {
+    private final ServerState serverState;
+    public CommandHandler(ConcurrentHashMap<String, String> mp, ConcurrentHashMap<String, Long> expirationMap, ConcurrentHashMap<String, List<String>> listsMap, ConcurrentHashMap<String, Stream> streamMap, ReentrantReadWriteLock globalLock, ConcurrentHashMap<String, Set<ClientState>> watchRegistry, ServerState serverState) {
         this.mp = mp;
         this.expirationMap = expirationMap;
         this.listsMap = listsMap;
         this.streamMap = streamMap;
         this.globalLock = globalLock;
         this.watchRegistry = watchRegistry;
+        this.serverState = serverState;
     }
 
     private void notifyWatchers(String key)
@@ -31,6 +36,13 @@ public class CommandHandler {
                 if(cs.getTransactionStatus() == TransactionStatus.PRE)
                     cs.setDirty(true);
             }
+        }
+    }
+    private void propagateToSlaves(String[] cmd) throws IOException {
+        for(OutputStream outputStream: serverState.getMasterReplicationSlaves())
+        {
+            outputStream.write(Resp.encodeArray(Arrays.asList(cmd)).getBytes());
+            outputStream.flush();
         }
     }
     public String handle(String[] inp)
@@ -66,6 +78,8 @@ public class CommandHandler {
                     else
                         expirationMap.remove(inp[1]);
                     notifyWatchers(key);
+
+                    propagateToSlaves(inp);
 
                     output="OK";
                     return Resp.encodeSimpleString(output);
@@ -292,6 +306,9 @@ public class CommandHandler {
                     long newValue = val+1;
                     mp.put(key, Long.toString(newValue));
                     notifyWatchers(key);
+
+                    propagateToSlaves(inp);
+
                     return Resp.encodeInteger(newValue);
 
                 default:

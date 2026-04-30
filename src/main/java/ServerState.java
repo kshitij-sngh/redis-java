@@ -1,3 +1,9 @@
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public class ServerState {
     private int port = Constants.DEFAULT_PORT;
     private String replicationRole="master";
@@ -5,6 +11,7 @@ public class ServerState {
     //Master
     private String masterReplicationId;
     private long masterReplicationOffset;
+    private final List<OutputStream> masterReplicationSlaves =new CopyOnWriteArrayList<>();;
 
     //Slave
     private String masterHost;
@@ -13,6 +20,15 @@ public class ServerState {
     public boolean isMaster()
     {
         return "master".equals(replicationRole);
+    }
+
+    public List<OutputStream> getMasterReplicationSlaves() {
+        return masterReplicationSlaves;
+    }
+
+    public void masterReplicationSlavesAddSlave(OutputStream outputStream)
+    {
+        masterReplicationSlaves.add(outputStream);
     }
     public int getPort() {
         return port;
