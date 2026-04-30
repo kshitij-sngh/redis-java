@@ -205,6 +205,12 @@ public class Main {
                                 outputStream.write(output.getBytes());
                                 outputStream.flush();
                             }
+                            else if("PSYNC".equalsIgnoreCase(inp[0]))
+                            {
+                                output=Resp.encodeArray(List.of("FULLRESYNC", serverState.getMasterReplicationId(), Long.toString(serverState.getMasterReplicationOffset())));
+                                outputStream.write(output.getBytes());
+                                outputStream.flush();
+                            }
                             else
                             {
                                 if(clientState.getTransactionStatus() == TransactionStatus.PRE)
@@ -232,7 +238,7 @@ public class Main {
                     Helper.unwatchAll(clientState, watchRegistry);
                     System.out.println("Client disconnected and watch registry cleaned up.");
                 }
-            }).start();
+            }).start;
         }
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
