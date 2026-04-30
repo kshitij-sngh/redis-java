@@ -14,12 +14,25 @@ public class Main {
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
     int port = Constants.DEFAULT_PORT;
+    String serverReplicationRole ="master";
 
-    for(int i=0; i<args.length; i++)
-        if("--port".equalsIgnoreCase(args[i]) && i+1<args.length) {
-          port = Integer.parseInt(args[i + 1]);
-          break;
+    Map<String, String> cmdLineArgsMap = Helper.createCmdLineMap(args);
+    if(cmdLineArgsMap.containsKey("port"))
+        try{
+            port = Integer.parseInt(cmdLineArgsMap.get("port"));
+        }catch (NumberFormatException e)
+        {
+            System.out.println("Invalid port argument value passed, using default");
         }
+
+    if(cmdLineArgsMap.containsKey("replicaof"))
+    {
+        String role=cmdLineArgsMap.get("replicaof");
+        if(Constants.serverAllowedReplicationRoles.contains(role))
+            serverReplicationRole=role;
+    }
+
+    ServerState serverState = new ServerState(serverReplicationRole);
 
     try {
       serverSocket = new ServerSocket(port);
@@ -142,6 +155,15 @@ public class Main {
                                 output=Resp.encodeSimpleString("OK");
                                 outputStream.write(output.getBytes());
                                 outputStream.flush();
+                            }
+                            else if("INFO".equalsIgnoreCase(inp[0]))
+                            {
+                                if(inp.length>=2 && "replication".equalsIgnoreCase(inp[1]))
+                                {
+                                    output = "# Replication\nrole:"+serverState.getReplicationRole();
+                                    outputStream.write(output.getBytes());
+                                    outputStream.flush();
+                                }
                             }
                             else
                             {

@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 
@@ -53,5 +50,15 @@ public class Helper {
 
         keys.clear();
         clientState.setDirty(false);
+    }
+
+    public static Map<String, String> createCmdLineMap(String[] args)
+    {
+        Map<String, String> cmdLineArgsMap = new HashMap<>();
+        for(int i=0; i<args.length; i+=2)
+            if(args[i].startsWith("--")&& i+1<args.length) {
+                cmdLineArgsMap.put(args[i].substring(2),args[i+1]);
+            }
+        return cmdLineArgsMap;
     }
 }
