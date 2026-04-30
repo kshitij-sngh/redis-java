@@ -211,16 +211,11 @@ public class Main {
                                 outputStream.write(output.getBytes());
                                 outputStream.flush();
 
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("$");
                                 byte[] fileContentsDecodedBytes = Base64.getDecoder().decode(Constants.EMPTY_RDB_FILE_ENCODED);
-                                sb.append(fileContentsDecodedBytes.length);
-                                sb.append("\r\n");
-                                for(byte b: fileContentsDecodedBytes)
-                                    sb.append(b);
 
-                                output=sb.toString();
+                                output="$"+fileContentsDecodedBytes.length+"\r\n";
                                 outputStream.write(output.getBytes());
+                                outputStream.write(fileContentsDecodedBytes);
                                 outputStream.flush();
                             }
                             else
