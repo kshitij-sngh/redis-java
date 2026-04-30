@@ -109,10 +109,12 @@ public class Main {
 
                     while ((line = masterInputStreamReader.readLine()) != null)
                     {
+                        System.out.println("Slave received line "+line);
                         if (line.startsWith("*")) {
                             int length = Integer.parseInt(line.substring(1));
                             String[] inp = Resp.decodeBulkString(masterInputStreamReader, length);
 
+                            System.out.println("Slave executing: "+Arrays.toString(inp));
                             String output= commandHandler.handle(inp);
                         }
                     }
