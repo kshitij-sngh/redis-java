@@ -123,10 +123,11 @@ public class Main {
                             System.out.println("Slave executing: "+Arrays.toString(inp));
                             if("REPLCONF".equalsIgnoreCase(inp[0]))
                             {
-                                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "ACK", "0"));
+                                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "ACK", Long.toString(serverState.getReplicaOffset())));
                             }
                             else
                                 commandHandler.handle(inp);
+                            serverState.setReplicaOffset(serverState.getReplicaOffset()+Resp.encodeArray(Arrays.asList(inp)).getBytes().length);
                         }
                     }
                 }catch (IOException e)

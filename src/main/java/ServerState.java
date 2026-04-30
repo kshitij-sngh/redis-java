@@ -16,10 +16,19 @@ public class ServerState {
     //Slave
     private String masterHost;
     private int masterPort;
+    private long replicaOffset=0;
 
     public boolean isMaster()
     {
         return "master".equals(replicationRole);
+    }
+
+    public long getReplicaOffset() {
+        return replicaOffset;
+    }
+
+    public void setReplicaOffset(long replicaOffset) {
+        this.replicaOffset = replicaOffset;
     }
 
     public List<OutputStream> getMasterReplicationSlaves() {
