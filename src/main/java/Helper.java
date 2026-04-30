@@ -61,4 +61,20 @@ public class Helper {
             }
         return cmdLineArgsMap;
     }
+    public static String getServerReplicationInfo(ServerState serverState)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Replication\r\nrole:");
+        sb.append(serverState.getReplicationRole());
+        sb.append("\r\n");
+        if(serverState.isMaster())
+        {
+            sb.append(serverState.getMasterReplicationId());
+            sb.append("\r\n");
+            sb.append("master_repl_offset:");
+            sb.append(serverState.getMasterReplicationOffset());
+        }
+
+        return sb.toString();
+    }
 }

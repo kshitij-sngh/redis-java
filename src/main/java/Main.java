@@ -14,16 +14,12 @@ public class Main {
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
 
-    int port = Constants.DEFAULT_PORT;
-    String serverReplicationRole ="master";
-    String replicaOf = "";
-    String replicationId = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
-    long offset = 0;
-
     Map<String, String> cmdLineArgsMap = Helper.createCmdLineMap(args);
+    ServerState serverState = new ServerState();
     if(cmdLineArgsMap.containsKey("port"))
         try{
-            port = Integer.parseInt(cmdLineArgsMap.get("port"));
+            int port = Integer.parseInt(cmdLineArgsMap.get("port"));
+            serverState.setPort(port);
         }catch (NumberFormatException e)
         {
             System.out.println("Invalid port argument value passed, using default");
@@ -31,32 +27,47 @@ public class Main {
 
     if(cmdLineArgsMap.containsKey("replicaof"))
     {
-        serverReplicationRole="slave";
-        replicaOf=cmdLineArgsMap.get("replicaof");
+        serverState.setReplicationRole("slave");
+        String[] parts =cmdLineArgsMap.get("replicaof").split(" ");
+        serverState.setMasterHost(parts[0]);
+        serverState.setMasterPort(Integer.parseInt(parts[1]));
     }
 
-    ServerState serverState;
-    if(serverReplicationRole.equalsIgnoreCase("master"))
-        serverState = new MasterServerState(replicationId, offset);
-    else
-        serverState = new SlaveServerState(replicaOf);
+
+
+    if(serverState.isMaster())
+    {
+        serverState.setMasterReplicationId("8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb");
+        serverState.setMasterReplicationOffset(0);
+    }
+
 
     try {
-      serverSocket = new ServerSocket(port);
-      // Since the tester restarts your program quite often, setting SO_REUSEADDR
-      // ensures that we don't run into 'Address already in use' errors
-      serverSocket.setReuseAddress(true);
+        serverSocket = new ServerSocket(serverState.getPort());
+        // Since the tester restarts your program quite often, setting SO_REUSEADDR
+        // ensures that we don't run into 'Address already in use' errors
+        serverSocket.setReuseAddress(true);
 
-      ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
-      ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
-      ConcurrentHashMap<String, List<String>> listsMap = new ConcurrentHashMap<>();
-      ConcurrentHashMap<String, Stream> streamMap = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String,String> mp = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, Long> expirationMap = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, List<String>> listsMap = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, Stream> streamMap = new ConcurrentHashMap<>();
 
-      ConcurrentHashMap<String, Set<ClientState>> watchRegistry = new ConcurrentHashMap<>();
-      final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock(true);
+        ConcurrentHashMap<String, Set<ClientState>> watchRegistry = new ConcurrentHashMap<>();
+        final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock(true);
 
-      CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap, globalLock, watchRegistry);
+        CommandHandler commandHandler = new CommandHandler(mp, expirationMap, listsMap, streamMap, globalLock, watchRegistry);
 
+        //Slave Handshake
+        if(!serverState.isMaster())
+        {
+            try (Socket masterSocket = new Socket(serverState.getMasterHost(),serverState.getMasterPort())) {
+               OutputStream masterSocketOutputStream = masterSocket.getOutputStream();
+
+               masterSocketOutputStream.write(Resp.encodeArray(List.of("PING")).getBytes());
+               masterSocketOutputStream.flush();
+            }
+        }
         while(true) {
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
@@ -167,12 +178,7 @@ public class Main {
                             {
                                 if(inp.length>=2 && "replication".equalsIgnoreCase(inp[1]))
                                 {
-                                    output = "# Replication\nrole:"+serverState.getReplicationRole();
-                                    if(serverState.getReplicationRole().equals("master"))
-                                    {
-                                        output+="master_replid:"+((MasterServerState)serverState).getReplicationId()+"\n"+"master_repl_offset:"+((MasterServerState)serverState).getOffset();
-                                    }
-
+                                    output = Helper.getServerReplicationInfo(serverState);
                                     output = Resp.encodeBulkString(output);
 
                                     outputStream.write(output.getBytes());
