@@ -294,6 +294,14 @@ public class CommandHandler {
                     notifyWatchers(key);
                     return Resp.encodeInteger(newValue);
 
+                case "INFO":
+
+                    if(inp.length>=2 && "replication".equalsIgnoreCase(inp[1]))
+                    {
+                        output = "# Replication\nrole:master";
+                        return Resp.encodeBulkString(output);
+                    }
+
                 default:
                     return Resp.encodeError("ERR unknown command '" + command + "'");
             }
