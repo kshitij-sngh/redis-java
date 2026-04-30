@@ -13,14 +13,14 @@ public class Main {
     //  Uncomment the code below to pass the first stage
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
-    int port = 6379;
+    int port = Constants.DEFAULT_PORT;
 
     for(int i=0; i<args.length; i++)
-        if("--port".equalsIgnoreCase(args[i])) {
+        if("--port".equalsIgnoreCase(args[i]) && i+1<args.length) {
           port = Integer.parseInt(args[i + 1]);
           break;
         }
-      
+
     try {
       serverSocket = new ServerSocket(port);
       // Since the tester restarts your program quite often, setting SO_REUSEADDR
