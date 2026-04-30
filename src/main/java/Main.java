@@ -17,6 +17,8 @@ public class Main {
     int port = Constants.DEFAULT_PORT;
     String serverReplicationRole ="master";
     String replicaOf = "";
+    String replicationId = "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb";
+    long offset = 0;
 
     Map<String, String> cmdLineArgsMap = Helper.createCmdLineMap(args);
     if(cmdLineArgsMap.containsKey("port"))
@@ -33,7 +35,11 @@ public class Main {
         replicaOf=cmdLineArgsMap.get("replicaof");
     }
 
-    ServerState serverState = new ServerState(serverReplicationRole, replicaOf);
+    ServerState serverState;
+    if(serverReplicationRole.equalsIgnoreCase("master"))
+        serverState = new MasterServerState(replicationId, offset);
+    else
+        serverState = new SlaveServerState(replicaOf);
 
     try {
       serverSocket = new ServerSocket(port);
@@ -162,6 +168,11 @@ public class Main {
                                 if(inp.length>=2 && "replication".equalsIgnoreCase(inp[1]))
                                 {
                                     output = "# Replication\nrole:"+serverState.getReplicationRole();
+                                    if(serverState.getReplicationRole().equals("master"))
+                                    {
+                                        output+="master_replid:"+((MasterServerState)serverState).getReplicationId()+"\n"+"master_repl_offset:"+((MasterServerState)serverState).getOffset();
+                                    }
+
                                     output = Resp.encodeBulkString(output);
 
                                     outputStream.write(output.getBytes());

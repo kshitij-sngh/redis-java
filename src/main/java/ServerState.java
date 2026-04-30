@@ -1,17 +1,11 @@
 public class ServerState {
-    private String replicationRole = "master";
-    private String replicaOf = "";
+    private final String replicationRole;
 
-    public ServerState(String replicationRole, String replicaOf) {
+    public ServerState(String replicationRole) {
         this.replicationRole = replicationRole;
-        this.replicaOf = replicaOf;
     }
 
     public String getReplicationRole() {
         return replicationRole;
-    }
-
-    public String getReplicaOf() {
-        return replicaOf;
     }
 }
