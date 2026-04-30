@@ -207,7 +207,7 @@ public class Main {
                             }
                             else if("PSYNC".equalsIgnoreCase(inp[0]))
                             {
-                                output=Resp.encodeArray(List.of("FULLRESYNC", serverState.getMasterReplicationId(), Long.toString(serverState.getMasterReplicationOffset())));
+                                output=Resp.encodeSimpleString("FULLRESYNC "+serverState.getMasterReplicationId()+" "+serverState.getMasterReplicationOffset());
                                 outputStream.write(output.getBytes());
                                 outputStream.flush();
                             }
