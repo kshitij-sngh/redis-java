@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -77,5 +80,15 @@ public class Helper {
         }
 
         return sb.toString();
+    }
+
+    public static void sendCommandToMaster(ServerState serverState, List<String> command) throws IOException {
+        try (Socket masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort())) {
+            OutputStream masterSocketOutputStream = masterSocket.getOutputStream();
+
+            masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
+            masterSocketOutputStream.flush();
+            command.clear();
+        }
     }
 }
