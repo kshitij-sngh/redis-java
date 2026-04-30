@@ -1,5 +1,4 @@
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,13 +81,19 @@ public class Helper {
         return sb.toString();
     }
 
-    public static void sendCommandToMaster(ServerState serverState, List<String> command) throws IOException {
-        try (Socket masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort())) {
-            OutputStream masterSocketOutputStream = masterSocket.getOutputStream();
-
-            masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
-            masterSocketOutputStream.flush();
-            command.clear();
+    public static void sendCommandToMaster(OutputStream masterSocketOutputStream, List<String> command) throws IOException {
+        masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
+        masterSocketOutputStream.flush();
+        command.clear();
+    }
+    public static List<String> recieveFromToMaster(InputStream masterSocketInputStream) throws IOException {
+        String line;
+        List<String> res = new ArrayList<>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(masterSocketInputStream));
+        while((line=reader.readLine())!=null)
+        {
+            res.add(line);
         }
+        return res;
     }
 }

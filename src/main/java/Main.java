@@ -61,9 +61,21 @@ public class Main {
         //Slave Handshake
         if(!serverState.isMaster())
         {
-            Helper.sendCommandToMaster(serverState, List.of("PING") );
-            Helper.sendCommandToMaster(serverState, List.of("REPLCONF", "listening-port", "6380"));
-            Helper.sendCommandToMaster(serverState, List.of("REPLCONF","capa", "psync2"));
+            try (Socket masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort())) {
+                OutputStream masterOutputStream = masterSocket.getOutputStream();
+                InputStream masterInputStream = masterSocket.getInputStream();
+
+                Helper.sendCommandToMaster(masterOutputStream, List.of("PING") );
+                Helper.recieveFromToMaster(masterInputStream);
+
+                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "listening-port", "6380"));
+                Helper.recieveFromToMaster(masterInputStream);
+
+                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF","capa", "psync2"));
+                Helper.recieveFromToMaster(masterInputStream);
+            }
+
+
         }
         while(true) {
             // Wait for connection from client.
