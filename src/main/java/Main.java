@@ -63,9 +63,22 @@ public class Main {
         {
             try (Socket masterSocket = new Socket(serverState.getMasterHost(),serverState.getMasterPort())) {
                OutputStream masterSocketOutputStream = masterSocket.getOutputStream();
+               List<String> command = new ArrayList<>();
 
-               masterSocketOutputStream.write(Resp.encodeArray(List.of("PING")).getBytes());
+               command.add("PING");
+               masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
                masterSocketOutputStream.flush();
+               command.clear();
+
+               command.addAll(List.of("REPLCONF", "listening-port", "6380"));
+               masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
+               masterSocketOutputStream.flush();
+               command.clear();
+
+               command.addAll(List.of("REPLCONF","capa", "psync2"));
+               masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
+               masterSocketOutputStream.flush();
+               command.clear();
             }
         }
         while(true) {
