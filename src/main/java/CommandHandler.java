@@ -315,7 +315,7 @@ public class CommandHandler {
                     int numReplicas = Integer.parseInt(inp[1]);
                     long timeoutInMilliSecs= Long.parseLong(inp[2]);
 
-                    return Resp.encodeInteger(0);
+                    return Resp.encodeInteger(serverState.getMasterReplicationSlaves().size());
                 default:
                     return Resp.encodeError("ERR unknown command '" + command + "'");
             }
