@@ -13,8 +13,10 @@ public class Main {
     //  Uncomment the code below to pass the first stage
     ServerSocket serverSocket = null;
     Socket clientSocket = null;
+
     int port = Constants.DEFAULT_PORT;
     String serverReplicationRole ="master";
+    String replicaOf = "";
 
     Map<String, String> cmdLineArgsMap = Helper.createCmdLineMap(args);
     if(cmdLineArgsMap.containsKey("port"))
@@ -27,12 +29,11 @@ public class Main {
 
     if(cmdLineArgsMap.containsKey("replicaof"))
     {
-        String role=cmdLineArgsMap.get("replicaof");
-        if(Constants.serverAllowedReplicationRoles.contains(role))
-            serverReplicationRole=role;
+        serverReplicationRole="slave";
+        replicaOf=cmdLineArgsMap.get("replicaof");
     }
 
-    ServerState serverState = new ServerState(serverReplicationRole);
+    ServerState serverState = new ServerState(serverReplicationRole, replicaOf);
 
     try {
       serverSocket = new ServerSocket(port);
