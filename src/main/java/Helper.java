@@ -85,4 +85,17 @@ public class Helper {
         masterSocketOutputStream.write(Resp.encodeArray(command).getBytes());
         masterSocketOutputStream.flush();
     }
+
+    public static String readRawLine(InputStream inputStream) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = inputStream.read()) != -1) {
+            if (b == '\r') {
+                int next = inputStream.read(); // Consume the '\n'
+                break;
+            }
+            sb.append((char) b);
+        }
+        return sb.toString();
+    }
 }

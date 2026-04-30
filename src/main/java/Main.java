@@ -68,7 +68,7 @@ public class Main {
                     String line;
                     Socket masterSocket;
                     OutputStream masterOutputStream;
-                    InputStream masterInputStream;
+                    InputStream masterInputStream=null;
                     BufferedReader masterInputStreamReader = null;
 
                     try {
@@ -76,30 +76,30 @@ public class Main {
                         masterSocket = new Socket(serverState.getMasterHost(), serverState.getMasterPort());
                         masterOutputStream = masterSocket.getOutputStream();
                         masterInputStream = masterSocket.getInputStream();
-                        masterInputStreamReader = new BufferedReader(new InputStreamReader(masterInputStream));
+                        //masterInputStreamReader = new BufferedReader(new InputStreamReader(masterInputStream));
 
                         Helper.sendCommandToMaster(masterOutputStream, List.of("PING"));
-                        line = masterInputStreamReader.readLine();
+                        line = Helper.readRawLine(masterInputStream);
 
                         Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "listening-port", Integer.toString(serverState.getPort())));
-                        line = masterInputStreamReader.readLine();
+                        line = Helper.readRawLine(masterInputStream);
 
                         Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "capa", "psync2"));
-                        line = masterInputStreamReader.readLine();
+                        line = Helper.readRawLine(masterInputStream);
 
                         Helper.sendCommandToMaster(masterOutputStream, List.of("PSYNC", "?", "-1"));
-                        line = masterInputStreamReader.readLine();
+                        line = Helper.readRawLine(masterInputStream);
                         //processing RDB file, draining RDB here
-                        line = masterInputStreamReader.readLine();
-                        if(line!=null && line.startsWith("$"))
+                        line = Helper.readRawLine(masterInputStream);
+                        if(line.startsWith("$"))
                         {
                             int rdbLength = Integer.parseInt(line.substring(1));
                             System.out.println("Processing RDB of length: "+rdbLength);
 
-                            char[] rdbBuffer = new char[rdbLength];
+                            byte[] rdbBuffer = new byte[rdbLength];
                             int readBytes=0;
                             while(readBytes<rdbLength) {
-                                int actualReadBytes = masterInputStreamReader.read(rdbBuffer, readBytes, rdbLength - readBytes);
+                                int actualReadBytes = masterInputStream.read(rdbBuffer, readBytes, rdbLength - readBytes);
                                 if (actualReadBytes == -1)
                                     break;
                                 readBytes += actualReadBytes;
@@ -112,6 +112,7 @@ public class Main {
                         System.out.println("Handshake IOException: " + e.getMessage());
                     }
 
+                    masterInputStreamReader = new BufferedReader(new InputStreamReader(masterInputStream));
                     while ((line = masterInputStreamReader.readLine()) != null)
                     {
                         System.out.println("Slave received line "+line);
