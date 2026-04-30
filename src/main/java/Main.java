@@ -96,9 +96,14 @@ public class Main {
                             int rdbLength = Integer.parseInt(line.substring(1));
                             System.out.println("Processing RDB of length: "+rdbLength);
 
-                            long skipped = 0;
-                            while(skipped<rdbLength)
-                                skipped += masterInputStream.skip(rdbLength-skipped);
+                            byte[] rdbBuffer = new byte[rdbLength];
+                            int readBytes=0;
+                            while(readBytes<rdbLength) {
+                                int actualReadBytes = masterInputStream.read(rdbBuffer, readBytes, rdbLength - readBytes);
+                                if (actualReadBytes == -1)
+                                    break;
+                                readBytes += actualReadBytes;
+                            }
 
                             System.out.println("RDB processed successfully");
                         }
