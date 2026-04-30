@@ -66,7 +66,7 @@ public class Main {
                 InputStream masterInputStream = masterSocket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(masterInputStream));
                 String line;
-                
+
                 Helper.sendCommandToMaster(masterOutputStream, List.of("PING") );
                 line=reader.readLine();
 
@@ -74,6 +74,9 @@ public class Main {
                 line=reader.readLine();
 
                 Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF","capa", "psync2"));
+                line=reader.readLine();
+
+                Helper.sendCommandToMaster(masterOutputStream, List.of("PSYNC", "?", "-1"));
                 line=reader.readLine();
             }
 
