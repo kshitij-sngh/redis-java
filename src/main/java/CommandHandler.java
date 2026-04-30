@@ -294,6 +294,9 @@ public class CommandHandler {
                     notifyWatchers(key);
                     return Resp.encodeInteger(newValue);
 
+                case "REPLCONF":
+                    return Resp.encodeSimpleString("OK");
+                    
                 default:
                     return Resp.encodeError("ERR unknown command '" + command + "'");
             }
