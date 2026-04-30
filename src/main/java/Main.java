@@ -67,7 +67,7 @@ public class Main {
                 try {
                     String line;
                     Socket masterSocket;
-                    OutputStream masterOutputStream;
+                    OutputStream masterOutputStream=null;
                     InputStream masterInputStream=null;
                     BufferedReader masterInputStreamReader = null;
 
@@ -121,7 +121,12 @@ public class Main {
                             String[] inp = Resp.decodeBulkString(masterInputStreamReader, length);
 
                             System.out.println("Slave executing: "+Arrays.toString(inp));
-                            String output= commandHandler.handle(inp);
+                            if("REPLCONF".equalsIgnoreCase(inp[0]))
+                            {
+                                Helper.sendCommandToMaster(masterOutputStream, List.of("REPLCONF", "ACK", "0"));
+                            }
+                            else
+                                commandHandler.handle(inp);
                         }
                     }
                 }catch (IOException e)
