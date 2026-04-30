@@ -115,10 +115,6 @@ public class Main {
 
                             String output= commandHandler.handle(inp);
                         }
-                        else if(line.startsWith("$"))
-                        {
-
-                        }
                     }
                 }catch (IOException e)
                 {
